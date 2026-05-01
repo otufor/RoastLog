@@ -23,7 +23,8 @@
     "dexie": "^4.0.11",
     "msw": "^2.14.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "zod": "^4.4.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.13",
