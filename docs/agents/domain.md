@@ -17,8 +17,10 @@ Single-context repo:
 /
 ├── CONTEXT.md
 ├── docs/adr/
-│   ├── 0001-indexeddb-as-primary-storage.md
-│   └── 0002-repository-pattern-for-tauri-migration.md
+│   ├── 0001-tanstack-query-repository-pattern.md
+│   ├── 0002-stock-decrement-on-create-only.md
+│   ├── 0003-tanstack-router.md
+│   └── 0004-domain-layer.md
 └── src/
 ```
 
