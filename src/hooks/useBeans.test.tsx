@@ -3,8 +3,12 @@ import { act, renderHook, waitFor } from "@testing-library/react/pure";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/db";
-import { useCreateBean, useDeleteBean, useUpdateBean } from "@/hooks/useMutateBean";
 import { useBeans } from "@/hooks/useBeans";
+import {
+  useCreateBean,
+  useDeleteBean,
+  useUpdateBean,
+} from "@/hooks/useMutateBean";
 
 function makeWrapper(qc: QueryClient) {
   return function Wrapper({ children }: { children: ReactNode }) {
@@ -51,7 +55,7 @@ describe("useBeans", () => {
     });
 
     await waitFor(() => expect(beans.current.data).toHaveLength(1));
-    expect(beans.current.data![0].name).toBe("エチオピア イルガチェフェ");
+    expect(beans.current.data?.[0].name).toBe("エチオピア イルガチェフェ");
   });
 
   it("useDeleteBean で削除すると useBeans から消える", async () => {
@@ -77,8 +81,10 @@ describe("useBeans", () => {
     });
     await waitFor(() => expect(beans.current.data).toHaveLength(1));
 
-    const id = beans.current.data![0].id;
-    await act(async () => { del.current.mutate(id); });
+    const id = beans.current.data?.[0].id ?? "";
+    await act(async () => {
+      del.current.mutate(id);
+    });
     await waitFor(() => expect(beans.current.data).toHaveLength(0));
   });
 
@@ -105,12 +111,15 @@ describe("useBeans", () => {
     });
     await waitFor(() => expect(beans.current.data).toHaveLength(1));
 
-    const bean = beans.current.data![0];
+    const bean = beans.current.data?.[0];
+    if (!bean) throw new Error("bean not found");
     await act(async () => {
       update.current.mutate({ ...bean, name: "ブラジル セラード", stockG: 150 });
     });
 
-    await waitFor(() => expect(beans.current.data![0].name).toBe("ブラジル セラード"));
-    expect(beans.current.data![0].stockG).toBe(150);
+    await waitFor(() =>
+      expect(beans.current.data?.[0].name).toBe("ブラジル セラード"),
+    );
+    expect(beans.current.data?.[0].stockG).toBe(150);
   });
 });
