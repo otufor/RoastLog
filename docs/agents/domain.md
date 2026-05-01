@@ -20,7 +20,8 @@ Single-context repo:
 │   ├── 0001-tanstack-query-repository-pattern.md
 │   ├── 0002-stock-decrement-on-create-only.md
 │   ├── 0003-tanstack-router.md
-│   └── 0004-domain-layer.md
+│   ├── 0004-domain-layer.md
+│   └── 0005-deferred-tooling.md
 └── src/
 ```
 
