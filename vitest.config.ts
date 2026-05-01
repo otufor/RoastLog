@@ -28,6 +28,7 @@ export default defineConfig({
           alias: { "@": resolve(__dirname, "src") },
         },
         plugins: [react()],
+        publicDir: "public",
         test: {
           name: "browser",
           include: [
