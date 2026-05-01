@@ -33,6 +33,15 @@
       "trailingCommas": "all"
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": false,
+      "tailwindDirectives": true
+    },
+    "linter": {
+      "enabled": true
+    }
+  },
   "assist": {
     "enabled": true,
     "actions": {
