@@ -114,7 +114,11 @@ describe("useBeans", () => {
     const bean = beans.current.data?.[0];
     if (!bean) throw new Error("bean not found");
     await act(async () => {
-      update.current.mutate({ ...bean, name: "ブラジル セラード", stockG: 150 });
+      update.current.mutate({
+        ...bean,
+        name: "ブラジル セラード",
+        stockG: 150,
+      });
     });
 
     await waitFor(() =>
