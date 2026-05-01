@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const HexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+export const HexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const RoastLevelSchema = z.object({
   id: z.string().min(1),
