@@ -14,3 +14,6 @@ export const BeanSchema = z.object({
 });
 
 export type Bean = z.infer<typeof BeanSchema>;
+
+export const CreateBeanInputSchema = BeanSchema.omit({ id: true, bestLogId: true });
+export type CreateBeanInput = z.infer<typeof CreateBeanInputSchema>;
