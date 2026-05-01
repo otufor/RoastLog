@@ -1,4 +1,7 @@
-export function calcWeightLossRate(weightBeforeG: number, weightAfterG: number): number {
+export function calcWeightLossRate(
+  weightBeforeG: number,
+  weightAfterG: number,
+): number {
   return (1 - weightAfterG / weightBeforeG) * 100;
 }
 
