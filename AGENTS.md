@@ -1,57 +1,97 @@
-<!-- gitnexus:start -->
-# GitNexus — Code Intelligence
+# CLAUDE.md
 
-This project is indexed by GitNexus as **RoastLog** (34 symbols, 32 relationships, 0 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+<!-- gitnexus:start -->
+## GitNexus — Code Intelligence
+
+This project is indexed by GitNexus as **RoastLog**. Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
-## Always Do
-
-- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
-- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
-- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
-- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
-- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
-
-## Never Do
-
-- NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
-- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
-- NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
-
-## Resources
+- **MUST run impact analysis before editing any symbol.** Run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius before proceeding.
+- **MUST run `gitnexus_detect_changes()` before committing** to verify changes only affect expected symbols.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk.
+- NEVER rename symbols with find-and-replace — use `gitnexus_rename`.
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/RoastLog/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/RoastLog/context` | Codebase overview, index freshness |
 | `gitnexus://repo/RoastLog/clusters` | All functional areas |
 | `gitnexus://repo/RoastLog/processes` | All execution flows |
-| `gitnexus://repo/RoastLog/process/{name}` | Step-by-step execution trace |
-
-## CLI
-
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+## Commands
+
+```bash
+npm run dev           # Vite dev server (with TS + Biome overlay via vite-plugin-checker)
+npm run build         # tsc + vite build
+npm run test:run      # All tests (unit + browser)
+npm run test:unit     # src/domain/** and src/schemas/** in Node
+npm run test:browser  # src/repositories/**, src/components/**, src/hooks/** in Chromium
+npm run test:coverage # Coverage report (thresholds enforced for domain/ and schemas/)
+npm run lint:fix      # Biome auto-fix
+npm run arch:check    # Enforce layer dependency rules (dependency-cruiser)
+```
+
+Run a single test file:
+```bash
+npx vitest run --project unit src/schemas/bean.test.ts
+npx vitest run --project browser src/repositories/beanRepository.test.ts
+```
+
+Pre-commit hook (lefthook) runs `biome check`, `tsc --noEmit`, and `arch:check` in parallel automatically.
+
+## Architecture
+
+### Layer rules (enforced by dependency-cruiser, see `.dependency-cruiser.cjs`)
+
+```
+src/schemas/     ← Zod schemas. Single source of truth for all types.
+                   z.infer<> generates TypeScript types. No framework deps.
+src/domain/      ← Pure functions only (calcWeightLossRate, isCleanlinessWarning…).
+                   Zero deps on repositories, hooks, components, or frameworks.
+src/db/          ← Dexie DB instance (src/db/index.ts). Single singleton `db`.
+src/repositories/← Data access. Validates output via Schema.parse() on every read.
+                   Extends BaseRepository<T> (src/repositories/base.ts).
+src/hooks/       ← TanStack Query hooks. Calls repositories, never DB directly.
+src/components/  ← React UI. Calls hooks, never repositories directly.
+src/routes/      ← TanStack Router file-based routes (auto-generates routeTree.gen.ts).
+```
+
+Violations of these rules fail the pre-commit hook.
+
+### Key decisions (see `docs/adr/` for full rationale)
+
+- **Zod v4 schemas** — `src/schemas/` is the only place types are defined. Use `BeanSchema.parse()` on reads from IndexedDB and API responses; the TypeScript type alone is sufficient for internal writes.
+- **TanStack Query + Repository pattern** — Tauri migration only requires replacing `src/repositories/` implementations (ADR-0001).
+- **TanStack Form** — Use `validators: { onSubmit: SomeZodSchema }` directly. No adapter needed; Zod v4 implements Standard Schema and is auto-detected (ADR-0006). In browser-mode Vitest tests, `vi` must be imported explicitly: `import { vi } from "vitest"`.
+- **Stock decrement** — Only on RoastLog create, never on edit/delete (ADR-0002).
+- **TanStack Router** — Routes live in `src/routes/`. `routeTree.gen.ts` is auto-generated; never edit it.
+
+### Test harness
+
+| Project | Environment | Covers |
+|---------|------------|--------|
+| `unit` | Node | `src/domain/`, `src/schemas/` |
+| `browser` | Playwright/Chromium | `src/repositories/`, `src/components/`, `src/hooks/` |
+
+Browser tests use real IndexedDB (no fake-indexeddb). Each test creates a uniquely-named Dexie DB and deletes it in `afterEach`. MSW mocks Open-Meteo API responses; handlers are in `src/test/mocks/handlers.ts`.
+
+Coverage thresholds: `src/domain/**` and `src/schemas/**` must stay at 100%.
+
+### Domain language
+
+Read `CONTEXT.md` before naming anything. Key terms: **RoastLog** (not "session"), **Bean** (green/unroasted only), **Tasting**, **WeightLossRate** (derived, never stored), **Stock** (auto-decremented on create only), **Crack** (FirstCrack/SecondCrack).
 
 ## Agent skills
 
 ### Issue tracker
-
 Issues live in GitHub Issues. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
-
 Default five-role vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
 
 ### Domain docs
-
 Single-context layout — `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
