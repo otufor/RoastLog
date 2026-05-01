@@ -7,3 +7,6 @@ pre-commit:
 
     - name: typecheck
       run: npx tsc -b --noEmit
+
+    - name: arch
+      run: npm run arch:check
