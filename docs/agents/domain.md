@@ -21,7 +21,8 @@ Single-context repo:
 │   ├── 0002-stock-decrement-on-create-only.md
 │   ├── 0003-tanstack-router.md
 │   ├── 0004-domain-layer.md
-│   └── 0005-deferred-tooling.md
+│   ├── 0005-deferred-tooling.md
+│   └── 0006-tanstack-form.md
 └── src/
 ```
 
