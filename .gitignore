@@ -159,3 +159,5 @@ dist
 
 ### Project-specific ###
 .gitnexus
+.vitest-attachments/
+src/**/__screenshots__/
