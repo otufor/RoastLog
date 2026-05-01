@@ -2,25 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-<!-- gitnexus:start -->
-## GitNexus — Code Intelligence
+## GitNexus
 
-This project is indexed by GitNexus as **RoastLog**. Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
-
-> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
-
-- **MUST run impact analysis before editing any symbol.** Run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius before proceeding.
-- **MUST run `gitnexus_detect_changes()` before committing** to verify changes only affect expected symbols.
-- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk.
-- NEVER rename symbols with find-and-replace — use `gitnexus_rename`.
-
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/RoastLog/context` | Codebase overview, index freshness |
-| `gitnexus://repo/RoastLog/clusters` | All functional areas |
-| `gitnexus://repo/RoastLog/processes` | All execution flows |
-
-<!-- gitnexus:end -->
+See `docs/agents/gitnexus.md`.
 
 ## Commands
 
