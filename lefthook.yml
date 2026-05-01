@@ -2,8 +2,7 @@ pre-commit:
   parallel: true
   jobs:
     - name: lint
-      glob: "*.{js,ts,jsx,tsx,json}"
-      run: npx biome check --write --staged .
+      run: npx biome check .
 
     - name: typecheck
       run: npx tsc -b --noEmit
