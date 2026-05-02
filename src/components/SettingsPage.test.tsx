@@ -8,7 +8,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react/pure";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SettingsPage } from "@/components/SettingsPage";
 import { db } from "@/db";
 
@@ -39,15 +39,13 @@ function renderPage() {
 
 describe("SettingsPage", () => {
   beforeEach(async () => {
-    await db.roastLevels.clear();
-    await db.flavorTags.clear();
-    await db.roastDevices.clear();
-  });
-
-  afterEach(async () => {
-    await db.roastLevels.clear();
-    await db.flavorTags.clear();
-    await db.roastDevices.clear();
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
   });
 
   it("3 つのマスター管理セクションを表示する", async () => {

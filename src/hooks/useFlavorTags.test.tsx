@@ -22,7 +22,13 @@ function makeQc() {
 
 describe("useFlavorTags", () => {
   beforeEach(async () => {
-    await db.flavorTags.clear();
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
   });
 
   it("初期状態では空配列を返す", async () => {

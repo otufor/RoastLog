@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react/pure";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { RoastLogListPage } from "@/components/RoastLogListPage";
 import { db } from "@/db";
 import type { Bean } from "@/schemas/bean";
@@ -83,15 +83,13 @@ function renderPage() {
 
 describe("RoastLogListPage", () => {
   beforeEach(async () => {
-    await db.roastLogs.clear();
-    await db.beans.clear();
-    await db.roastLevels.clear();
-  });
-
-  afterEach(async () => {
-    await db.roastLogs.clear();
-    await db.beans.clear();
-    await db.roastLevels.clear();
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
   });
 
   it("ログが 0 件のとき「焙煎ログがありません」を表示する", async () => {

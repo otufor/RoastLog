@@ -22,6 +22,25 @@ RoastLevel・FlavorTag・RoastDevice の 3 種マスターデータを localStor
 - **マスターは localStorage（不採用）**: requirements Rev 2.0 の元方針。Tauri 移行時に経路が 2 つに分岐する
 - **マスターも IndexedDB（採用）**: 永続化先を 1 本化、`BaseRepository<T>` を流用、Tauri 移行も `repositories/` 差し替え 1 経路で済む
 
+## シード失敗時の動作
+
+`seedMasterData` はアプリ起動の前提条件ではなく補助処理として扱う。IndexedDB が利用不可（iOS プライベートブラウズ・ストレージクォータ超過）の環境でも UI は起動しなければならない。
+
+```ts
+// NG: reject → .then が実行されず画面が無応答になる
+seedMasterData(db).then(renderApp);
+
+// NG: .catch が renderApp の例外も捕捉し二重呼び出しになる
+seedMasterData(db).then(renderApp).catch(() => renderApp());
+
+// OK: .catch → .then の順で renderApp は必ず一度だけ呼ばれる
+seedMasterData(db)
+  .catch((err) => { console.error("seedMasterData failed:", err); })
+  .then(renderApp);
+```
+
+同様のシード処理を追加するときは同じパターンに従うこと。
+
 ## 関連
 
 - ADR-0001: TanStack Query + Repository パターン

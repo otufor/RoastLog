@@ -50,7 +50,13 @@ function renderPage() {
 
 describe("BeanListPage", () => {
   beforeEach(async () => {
-    await db.beans.clear();
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
   });
 
   it("生豆が 0 件のとき空状態メッセージが表示される", async () => {
