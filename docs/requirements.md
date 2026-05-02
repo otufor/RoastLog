@@ -1,6 +1,6 @@
 # コーヒー焙煎管理アプリ 要求仕様書
 
-> Rev 2.0 / 2026-05-01
+> Rev 2.1 / 2026-05-02
 
 ---
 
@@ -13,7 +13,7 @@
 | 対象ユーザー | 自宅焙煎を行う個人（1 ユーザー） |
 | 利用形態 | ブラウザ（ローカル動作）・ログイン不要 |
 | 主目的 | 焙煎後の記録・振り返り・過去ログ比較 |
-| データ保存 | IndexedDB（ログ・豆データ）/ localStorage（設定・マスター） |
+| データ保存 | IndexedDB（全データ。Tauri 移行時に SQLite へ一本化する見通しのため、マスターデータも IndexedDB に集約。ADR-0008 参照） |
 | バックアップ | CSV エクスポート・インポート |
 
 ---
@@ -146,7 +146,7 @@ RoastLevel {
 
 FlavorTag {
   id    : string
-  label : string  // 例: "フローラル"
+  name  : string  // 例: "フローラル"
   color : string  // hex
 }
 
@@ -157,8 +157,8 @@ FlavorTag {
 
 RoastDevice {
   id    : string
-  name  : string  // 例: "weroast HOME ROASTER"
-  type  : string  // 例: "熱風式"
+  name  : string    // 例: "weroast HOME ROASTER"
+  method: string    // 例: "熱風式"
   note  : string
 }
 ```

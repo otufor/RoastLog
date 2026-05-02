@@ -1,0 +1,157 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react/pure";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { db } from "@/db";
+import {
+  useCreateRoastLog,
+  useDeleteRoastLog,
+} from "@/hooks/useMutateRoastLog";
+import { useRoastLogs } from "@/hooks/useRoastLogs";
+
+function makeWrapper(qc: QueryClient) {
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+  };
+}
+
+function makeQc() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+}
+
+const BASE_INPUT = {
+  beanId: "550e8400-e29b-41d4-a716-446655440001",
+  roastDate: "2025-04-20",
+  roastLevelId: "medium",
+  roastDeviceId: null,
+  roastDurationSec: 480,
+  firstCrackSec: 300,
+  secondCrackSec: null,
+  weightBeforeG: 250,
+  weightAfterG: 210,
+  outdoorTempC: 18,
+  outdoorHumidity: 60,
+  indoorTempC: 22,
+  tempSource: "auto" as const,
+  weatherCode: 0,
+  tasting: null,
+  overallScore: null,
+  processNote: "",
+};
+
+describe("useRoastLogs", () => {
+  beforeEach(async () => {
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
+  });
+
+  it("初期状態では空配列を返す", async () => {
+    const { result } = renderHook(() => useRoastLogs(), {
+      wrapper: makeWrapper(makeQc()),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.data).toEqual([]);
+  });
+
+  it("useCreateRoastLog で保存すると useRoastLogs に現れる", async () => {
+    await db.beans.put({
+      id: BASE_INPUT.beanId,
+      name: "エチオピア イルガチェフェ",
+      origin: "エチオピア",
+      productName: "",
+      shopName: "",
+      purchasedAt: null,
+      importedAt: null,
+      stockG: 500,
+      bestLogId: null,
+      note: "",
+    });
+
+    const qc = makeQc();
+    const wrapper = makeWrapper(qc);
+    const { result: logs } = renderHook(() => useRoastLogs(), { wrapper });
+    const { result: create } = renderHook(() => useCreateRoastLog(), {
+      wrapper,
+    });
+
+    await waitFor(() => expect(logs.current.isLoading).toBe(false));
+
+    await act(async () => {
+      create.current.mutate(BASE_INPUT);
+    });
+
+    await waitFor(() => expect(logs.current.data).toHaveLength(1));
+    expect(logs.current.data?.[0].weightBeforeG).toBe(250);
+  });
+
+  it("useCreateRoastLog は Bean の在庫を weightBeforeG だけデクリメントする", async () => {
+    await db.beans.put({
+      id: BASE_INPUT.beanId,
+      name: "エチオピア イルガチェフェ",
+      origin: "エチオピア",
+      productName: "",
+      shopName: "",
+      purchasedAt: null,
+      importedAt: null,
+      stockG: 500,
+      bestLogId: null,
+      note: "",
+    });
+
+    const qc = makeQc();
+    const wrapper = makeWrapper(qc);
+    const { result: create } = renderHook(() => useCreateRoastLog(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      create.current.mutate(BASE_INPUT);
+    });
+    await waitFor(() => expect(create.current.isSuccess).toBe(true));
+
+    const bean = await db.beans.get(BASE_INPUT.beanId);
+    expect(bean?.stockG).toBe(250); // 500 - 250
+  });
+
+  it("useDeleteRoastLog で削除すると useRoastLogs から消える", async () => {
+    await db.beans.put({
+      id: BASE_INPUT.beanId,
+      name: "エチオピア イルガチェフェ",
+      origin: "エチオピア",
+      productName: "",
+      shopName: "",
+      purchasedAt: null,
+      importedAt: null,
+      stockG: 500,
+      bestLogId: null,
+      note: "",
+    });
+
+    const qc = makeQc();
+    const wrapper = makeWrapper(qc);
+    const { result: logs } = renderHook(() => useRoastLogs(), { wrapper });
+    const { result: create } = renderHook(() => useCreateRoastLog(), {
+      wrapper,
+    });
+    const { result: del } = renderHook(() => useDeleteRoastLog(), { wrapper });
+
+    await waitFor(() => expect(logs.current.isLoading).toBe(false));
+
+    await act(async () => {
+      create.current.mutate(BASE_INPUT);
+    });
+    await waitFor(() => expect(logs.current.data).toHaveLength(1));
+
+    const logId = logs.current.data?.[0]?.id ?? "";
+    expect(logId).not.toBe("");
+    await act(async () => {
+      del.current.mutate(logId);
+    });
+    await waitFor(() => expect(logs.current.data).toHaveLength(0));
+  });
+});

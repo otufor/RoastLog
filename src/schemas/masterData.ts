@@ -25,3 +25,16 @@ export const RoastDeviceSchema = z.object({
 export type RoastLevel = z.infer<typeof RoastLevelSchema>;
 export type FlavorTag = z.infer<typeof FlavorTagSchema>;
 export type RoastDevice = z.infer<typeof RoastDeviceSchema>;
+
+export const CreateRoastLevelInputSchema = RoastLevelSchema.omit({ id: true });
+export type CreateRoastLevelInput = z.infer<typeof CreateRoastLevelInputSchema>;
+
+export const CreateFlavorTagInputSchema = FlavorTagSchema.omit({ id: true });
+export type CreateFlavorTagInput = z.infer<typeof CreateFlavorTagInputSchema>;
+
+export const CreateRoastDeviceInputSchema = RoastDeviceSchema.omit({
+  id: true,
+});
+export type CreateRoastDeviceInput = z.infer<
+  typeof CreateRoastDeviceInputSchema
+>;

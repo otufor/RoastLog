@@ -41,7 +41,13 @@ function renderPage() {
 
 describe("BeanCreatePage", () => {
   beforeEach(async () => {
-    await db.beans.clear();
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
   });
 
   it("登録後、保存した Bean の詳細画面へ遷移する", async () => {

@@ -49,8 +49,9 @@ Violations of these rules fail the pre-commit hook.
 ### Key decisions (see `docs/adr/` for full rationale)
 
 - **Zod v4 schemas** — `src/schemas/` is the only place types are defined. Use `BeanSchema.parse()` on reads from IndexedDB and API responses; the TypeScript type alone is sufficient for internal writes.
-- **TanStack Query + Repository pattern** — Tauri migration only requires replacing `src/repositories/` implementations (ADR-0001).
-- **TanStack Form** — Use `validators: { onSubmit: SomeZodSchema }` directly. No adapter needed; Zod v4 implements Standard Schema and is auto-detected (ADR-0006). In browser-mode Vitest tests, `vi` must be imported explicitly: `import { vi } from "vitest"`.
+- **TanStack Query + Repository pattern** — Tauri migration only requires replacing `src/repositories/` implementations (ADR-0001). When a component derives data from multiple queries (maps or sets), OR **all** their `isLoading` flags before rendering: `if (q1.isLoading || q2.isLoading || q3.isLoading) return null`. Checking only the "primary" query allows empty maps to flash on screen before secondary queries resolve.
+- **React Compiler** — `babel-plugin-react-compiler` is enabled globally. Do **not** write `useMemo` / `useCallback` / `React.memo` — the compiler memoizes automatically. Plain inline expressions and functions are preferred.
+- **TanStack Form** — Use `validators: { onSubmit: SomeZodSchema }` directly. No adapter needed; Zod v4 implements Standard Schema and is auto-detected (ADR-0006). In browser-mode Vitest tests, `vi` must be imported explicitly: `import { vi } from "vitest"`. All form components in `src/components/` must use TanStack Form with `validators: { onSubmit: Schema }`. Plain `useState` forms bypass Zod validation — repositories do not validate on write, so the form is the sole guard against invalid data entering IndexedDB.
 - **Stock decrement** — Only on RoastLog create, never on edit/delete (ADR-0002).
 - **TanStack Router** — Routes live in `src/routes/`. `routeTree.gen.ts` is auto-generated; never edit it.
 - **Date parsing in domain** — Never `new Date("YYYY-MM-DD")`; it is parsed as UTC midnight and breaks `.getMonth()` etc. for users west of UTC. Build dates from local components (ADR-0007).
@@ -62,9 +63,27 @@ Violations of these rules fail the pre-commit hook.
 | `unit` | Node | `src/domain/`, `src/schemas/` |
 | `browser` | Playwright/Chromium | `src/repositories/`, `src/components/`, `src/hooks/` |
 
-Browser tests use real IndexedDB (no fake-indexeddb). Each test creates a uniquely-named Dexie DB and deletes it in `afterEach`. MSW mocks Open-Meteo API responses; handlers are in `src/test/mocks/handlers.ts`.
+Browser tests use real IndexedDB (no fake-indexeddb). MSW mocks Open-Meteo API responses; handlers are in `src/test/mocks/handlers.ts`.
+
+**DB isolation by layer:**
+- `src/repositories/` tests — create a uniquely-named Dexie in `beforeEach` (`new Dexie(\`test-${crypto.randomUUID()}\`)`), delete it in `afterEach` (`Dexie.delete(db.name)`). Repositories accept a `Table` via constructor so a fresh Dexie can be injected.
+- `src/components/` and `src/hooks/` tests — hooks bind to the global `db` singleton at module scope (`const repo = new Repo(db.table)`), making per-test DB injection infeasible without a full DI refactor. Use `beforeEach` to clear **all** tables via `Promise.all`. Do not clear only the table under test — other tables may hold stale data from a previously failed test.
+
+```ts
+beforeEach(async () => {
+  await Promise.all([
+    db.roastLevels.clear(), db.flavorTags.clear(), db.roastDevices.clear(),
+    db.beans.clear(), db.roastLogs.clear(),
+  ]);
+});
+```
 
 Coverage thresholds: `src/domain/**` and `src/schemas/**` must stay at 100%.
+
+### Accessibility conventions
+
+- `role="dialog"` must always have `aria-labelledby` pointing to a visible heading (`<h3 id="...">`) within it. Without it, screen readers announce only "dialog" with no context.
+- Do not use `role="img"` on a container with interactive children (`<button>` etc.) — browsers implicitly apply `role="presentation"` to all descendants, hiding them from the accessibility tree. Use `role="group"` + `aria-label` for interactive composite widgets; `role="img"` for display-only. See `StarRating` for the reference pattern (switches role based on whether `onChange` is provided).
 
 ### Domain language
 

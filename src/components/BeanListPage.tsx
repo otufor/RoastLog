@@ -8,7 +8,7 @@ export function BeanListPage() {
   if (isLoading) return null;
 
   return (
-    <div className="p-6">
+    <div className="h-full overflow-y-auto p-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">生豆</h1>
         <Link to="/beans/new" className={buttonVariants()}>

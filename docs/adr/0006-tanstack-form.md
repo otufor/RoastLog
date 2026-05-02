@@ -14,6 +14,12 @@ const form = useForm({
 });
 ```
 
+## 全フォームへの適用義務
+
+`src/components/` 内のすべてのフォームコンポーネントは TanStack Form + `validators: { onSubmit: Schema }` を使用しなければならない。
+
+**理由**: リポジトリ層は書き込み時にバリデーションを行わない（ADR-0001「内部書き込みには TypeScript 型のみで十分」）。したがって、フォームレベルの Zod バリデーションが IndexedDB への不正データ流入を防ぐ唯一の防壁になる。`useState` + ネイティブ form で実装した場合、空文字や不正な hex カラーがそのまま保存され、次回 `repo.findAll()` の `Schema.parse()` で例外が発生する。
+
 ## 注意点
 
 browser mode の Vitest テストでは `vi` はグローバルに注入されない。`import { vi } from "vitest"` を明示的に書く必要がある。

@@ -41,7 +41,13 @@ function renderAt(beanId: string) {
 
 describe("BeanEditPage", () => {
   beforeEach(async () => {
-    await db.beans.clear();
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
   });
 
   it("既存値を初期表示し、stockG を変更して保存すると詳細画面へ遷移する", async () => {

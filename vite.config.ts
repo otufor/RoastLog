@@ -9,7 +9,11 @@ export default defineConfig({
   plugins: [
     TanStackRouterVite(),
     tailwindcss(),
-    react(),
+    react({
+      babel: {
+        plugins: [["babel-plugin-react-compiler"]],
+      },
+    }),
     checker({ typescript: true, biome: true }),
   ],
   resolve: {
