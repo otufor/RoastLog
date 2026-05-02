@@ -10,6 +10,10 @@ describe("calcWeightLossRate", () => {
   it("重量が同じなら 0 を返す", () => {
     expect(calcWeightLossRate(100, 100)).toBe(0);
   });
+
+  it("焙煎前重量が 0 以下なら 0 を返す", () => {
+    expect(calcWeightLossRate(0, 0)).toBe(0);
+  });
 });
 
 describe("isCleanlinessWarning", () => {

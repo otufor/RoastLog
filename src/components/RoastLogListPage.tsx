@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { RoastBadge } from "@/components/RoastBadge";
 import { StarRating } from "@/components/StarRating";
+import { calcWeightLossRate } from "@/domain/roastLog";
 import { useBeans } from "@/hooks/useBeans";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
 import { useRoastLogs } from "@/hooks/useRoastLogs";
@@ -12,11 +13,6 @@ const FILTERS = [
   { id: "score", label: "スコア" },
   { id: "date", label: "日付" },
 ] as const;
-
-function calcWeightLossRate(before: number, after: number): number {
-  if (before <= 0) return 0;
-  return (1 - after / before) * 100;
-}
 
 export function RoastLogListPage() {
   const [filter, setFilter] = useState<string>("all");
