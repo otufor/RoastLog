@@ -10,33 +10,84 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BeansIndexRouteImport } from './routes/beans.index'
+import { Route as BeansNewRouteImport } from './routes/beans.new'
+import { Route as BeansBeanIdIndexRouteImport } from './routes/beans.$beanId.index'
+import { Route as BeansBeanIdEditRouteImport } from './routes/beans.$beanId.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BeansIndexRoute = BeansIndexRouteImport.update({
+  id: '/beans/',
+  path: '/beans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BeansNewRoute = BeansNewRouteImport.update({
+  id: '/beans/new',
+  path: '/beans/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BeansBeanIdIndexRoute = BeansBeanIdIndexRouteImport.update({
+  id: '/beans/$beanId/',
+  path: '/beans/$beanId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BeansBeanIdEditRoute = BeansBeanIdEditRouteImport.update({
+  id: '/beans/$beanId/edit',
+  path: '/beans/$beanId/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/beans/new': typeof BeansNewRoute
+  '/beans/': typeof BeansIndexRoute
+  '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
+  '/beans/$beanId/': typeof BeansBeanIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/beans/new': typeof BeansNewRoute
+  '/beans': typeof BeansIndexRoute
+  '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
+  '/beans/$beanId': typeof BeansBeanIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/beans/new': typeof BeansNewRoute
+  '/beans/': typeof BeansIndexRoute
+  '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
+  '/beans/$beanId/': typeof BeansBeanIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/beans/new'
+    | '/beans/'
+    | '/beans/$beanId/edit'
+    | '/beans/$beanId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/beans/new' | '/beans' | '/beans/$beanId/edit' | '/beans/$beanId'
+  id:
+    | '__root__'
+    | '/'
+    | '/beans/new'
+    | '/beans/'
+    | '/beans/$beanId/edit'
+    | '/beans/$beanId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BeansNewRoute: typeof BeansNewRoute
+  BeansIndexRoute: typeof BeansIndexRoute
+  BeansBeanIdEditRoute: typeof BeansBeanIdEditRoute
+  BeansBeanIdIndexRoute: typeof BeansBeanIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +99,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/beans/': {
+      id: '/beans/'
+      path: '/beans'
+      fullPath: '/beans/'
+      preLoaderRoute: typeof BeansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/beans/new': {
+      id: '/beans/new'
+      path: '/beans/new'
+      fullPath: '/beans/new'
+      preLoaderRoute: typeof BeansNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/beans/$beanId/': {
+      id: '/beans/$beanId/'
+      path: '/beans/$beanId'
+      fullPath: '/beans/$beanId/'
+      preLoaderRoute: typeof BeansBeanIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/beans/$beanId/edit': {
+      id: '/beans/$beanId/edit'
+      path: '/beans/$beanId/edit'
+      fullPath: '/beans/$beanId/edit'
+      preLoaderRoute: typeof BeansBeanIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BeansNewRoute: BeansNewRoute,
+  BeansIndexRoute: BeansIndexRoute,
+  BeansBeanIdEditRoute: BeansBeanIdEditRoute,
+  BeansBeanIdIndexRoute: BeansBeanIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

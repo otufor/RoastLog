@@ -8,9 +8,14 @@ const repo = new BeanRepository(db.beans);
 export function useCreateBean() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: CreateBeanInput) => {
-      const bean = { ...input, id: crypto.randomUUID(), bestLogId: null };
+    mutationFn: async (input: CreateBeanInput): Promise<Bean> => {
+      const bean: Bean = {
+        ...input,
+        id: crypto.randomUUID(),
+        bestLogId: null,
+      };
       await repo.save(bean);
+      return bean;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["beans"] }),
   });
