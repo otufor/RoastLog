@@ -36,8 +36,12 @@ export function RoastLevelSettings() {
       </div>
 
       {draft && (
-        <div role="dialog" className="rounded-lg border bg-muted/30 p-4">
-          <h3 className="mb-3 font-medium">
+        <div
+          role="dialog"
+          aria-labelledby="roast-level-dialog-title"
+          className="rounded-lg border bg-muted/30 p-4"
+        >
+          <h3 id="roast-level-dialog-title" className="mb-3 font-medium">
             {draft.mode === "edit" ? "焙煎度を編集" : "焙煎度を追加"}
           </h3>
           <RoastLevelForm

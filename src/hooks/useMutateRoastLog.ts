@@ -12,8 +12,10 @@ export function useCreateRoastLog() {
   return useMutation({
     mutationFn: async (input: CreateRoastLogInput): Promise<RoastLog> => {
       const log: RoastLog = { ...input, id: crypto.randomUUID() };
-      await repo.save(log);
-      await beanRepo.decrementStock(input.beanId, input.weightBeforeG);
+      await db.transaction("rw", [db.roastLogs, db.beans], async () => {
+        await repo.save(log);
+        await beanRepo.decrementStock(input.beanId, input.weightBeforeG);
+      });
       return log;
     },
     onSuccess: () => {

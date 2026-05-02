@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react/pure";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import {
   useCreateRoastLog,
@@ -43,6 +43,14 @@ describe("useRoastLogs", () => {
   beforeEach(async () => {
     await db.roastLogs.clear();
     await db.beans.clear();
+  });
+
+  afterEach(async () => {
+    await db.flavorTags.clear();
+    await db.roastLevels.clear();
+    await db.roastDevices.clear();
+    await db.beans.clear();
+    await db.roastLogs.clear();
   });
 
   it("初期状態では空配列を返す", async () => {

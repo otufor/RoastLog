@@ -36,8 +36,12 @@ export function FlavorTagSettings() {
       </div>
 
       {draft && (
-        <div role="dialog" className="rounded-lg border bg-muted/30 p-4">
-          <h3 className="mb-3 font-medium">
+        <div
+          role="dialog"
+          aria-labelledby="flavor-tag-dialog-title"
+          className="rounded-lg border bg-muted/30 p-4"
+        >
+          <h3 id="flavor-tag-dialog-title" className="mb-3 font-medium">
             {draft.mode === "edit"
               ? "フレーバータグを編集"
               : "フレーバータグを追加"}

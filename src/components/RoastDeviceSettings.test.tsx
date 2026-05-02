@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react/pure";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { RoastDeviceSettings } from "@/components/RoastDeviceSettings";
 import { db } from "@/db";
 
@@ -17,6 +17,14 @@ function renderSection() {
 describe("RoastDeviceSettings", () => {
   beforeEach(async () => {
     await db.roastDevices.clear();
+  });
+
+  afterEach(async () => {
+    await db.flavorTags.clear();
+    await db.roastLevels.clear();
+    await db.roastDevices.clear();
+    await db.beans.clear();
+    await db.roastLogs.clear();
   });
 
   it("登録済み RoastDevice を一覧表示する", async () => {

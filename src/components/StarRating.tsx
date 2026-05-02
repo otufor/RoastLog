@@ -8,8 +8,9 @@ interface Props {
 export function StarRating({ value, max = 5, size = 16, onChange }: Props) {
   const label = value != null ? `${value}星 / ${max}星` : "未評価";
   return (
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-label is valid on role="group" per WAI-ARIA spec; Biome rule is outdated
     <span
-      role="img"
+      role={onChange ? "group" : "img"}
       aria-label={label}
       style={{ display: "inline-flex", gap: 1, lineHeight: 1 }}
     >
