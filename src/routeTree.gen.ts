@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LogsIndexRouteImport } from './routes/logs.index'
 import { Route as BeansIndexRouteImport } from './routes/beans.index'
+import { Route as AnalysisIndexRouteImport } from './routes/analysis.index'
 import { Route as BeansNewRouteImport } from './routes/beans.new'
 import { Route as BeansBeanIdIndexRouteImport } from './routes/beans.$beanId.index'
 import { Route as BeansBeanIdEditRouteImport } from './routes/beans.$beanId.edit'
@@ -26,9 +28,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LogsIndexRoute = LogsIndexRouteImport.update({
+  id: '/logs/',
+  path: '/logs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BeansIndexRoute = BeansIndexRouteImport.update({
   id: '/beans/',
   path: '/beans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalysisIndexRoute = AnalysisIndexRouteImport.update({
+  id: '/analysis/',
+  path: '/analysis/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BeansNewRoute = BeansNewRouteImport.update({
@@ -51,7 +63,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
+  '/analysis/': typeof AnalysisIndexRoute
   '/beans/': typeof BeansIndexRoute
+  '/logs/': typeof LogsIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
   '/beans/$beanId/': typeof BeansBeanIdIndexRoute
 }
@@ -59,7 +73,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
+  '/analysis': typeof AnalysisIndexRoute
   '/beans': typeof BeansIndexRoute
+  '/logs': typeof LogsIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
   '/beans/$beanId': typeof BeansBeanIdIndexRoute
 }
@@ -68,7 +84,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
+  '/analysis/': typeof AnalysisIndexRoute
   '/beans/': typeof BeansIndexRoute
+  '/logs/': typeof LogsIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
   '/beans/$beanId/': typeof BeansBeanIdIndexRoute
 }
@@ -78,7 +96,9 @@ export interface FileRouteTypes {
     | '/'
     | '/settings'
     | '/beans/new'
+    | '/analysis/'
     | '/beans/'
+    | '/logs/'
     | '/beans/$beanId/edit'
     | '/beans/$beanId/'
   fileRoutesByTo: FileRoutesByTo
@@ -86,7 +106,9 @@ export interface FileRouteTypes {
     | '/'
     | '/settings'
     | '/beans/new'
+    | '/analysis'
     | '/beans'
+    | '/logs'
     | '/beans/$beanId/edit'
     | '/beans/$beanId'
   id:
@@ -94,7 +116,9 @@ export interface FileRouteTypes {
     | '/'
     | '/settings'
     | '/beans/new'
+    | '/analysis/'
     | '/beans/'
+    | '/logs/'
     | '/beans/$beanId/edit'
     | '/beans/$beanId/'
   fileRoutesById: FileRoutesById
@@ -103,7 +127,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SettingsRoute: typeof SettingsRoute
   BeansNewRoute: typeof BeansNewRoute
+  AnalysisIndexRoute: typeof AnalysisIndexRoute
   BeansIndexRoute: typeof BeansIndexRoute
+  LogsIndexRoute: typeof LogsIndexRoute
   BeansBeanIdEditRoute: typeof BeansBeanIdEditRoute
   BeansBeanIdIndexRoute: typeof BeansBeanIdIndexRoute
 }
@@ -124,11 +150,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/logs/': {
+      id: '/logs/'
+      path: '/logs'
+      fullPath: '/logs/'
+      preLoaderRoute: typeof LogsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/beans/': {
       id: '/beans/'
       path: '/beans'
       fullPath: '/beans/'
       preLoaderRoute: typeof BeansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analysis/': {
+      id: '/analysis/'
+      path: '/analysis'
+      fullPath: '/analysis/'
+      preLoaderRoute: typeof AnalysisIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/beans/new': {
@@ -159,7 +199,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SettingsRoute: SettingsRoute,
   BeansNewRoute: BeansNewRoute,
+  AnalysisIndexRoute: AnalysisIndexRoute,
   BeansIndexRoute: BeansIndexRoute,
+  LogsIndexRoute: LogsIndexRoute,
   BeansBeanIdEditRoute: BeansBeanIdEditRoute,
   BeansBeanIdIndexRoute: BeansBeanIdIndexRoute,
 }

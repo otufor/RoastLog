@@ -35,3 +35,6 @@ export const RoastLogSchema = z.object({
 
 export type Tasting = z.infer<typeof TastingSchema>;
 export type RoastLog = z.infer<typeof RoastLogSchema>;
+
+export const CreateRoastLogInputSchema = RoastLogSchema.omit({ id: true });
+export type CreateRoastLogInput = z.infer<typeof CreateRoastLogInputSchema>;
