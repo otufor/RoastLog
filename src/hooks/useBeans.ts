@@ -10,3 +10,10 @@ export function useBeans() {
     queryFn: () => repo.findAll(),
   });
 }
+
+export function useBean(id: string) {
+  return useQuery({
+    queryKey: ["beans", id],
+    queryFn: async () => (await repo.findById(id)) ?? null,
+  });
+}

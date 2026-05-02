@@ -1,20 +1,51 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react/pure";
 import userEvent from "@testing-library/user-event";
-import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { BeanListPage } from "@/components/BeanListPage";
 import { db } from "@/db";
 
-function makeWrapper(qc: QueryClient) {
-  return function Wrapper({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
-  };
-}
-
 function renderPage() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(<BeanListPage />, { wrapper: makeWrapper(qc) });
+  const rootRoute = createRootRoute({ component: () => <Outlet /> });
+  const beansIndexRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/beans",
+    component: BeanListPage,
+  });
+  const beansNewRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/beans/new",
+    component: () => <div data-testid="new-page">new</div>,
+  });
+  const beanDetailRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/beans/$beanId",
+    component: () => <div data-testid="detail-page">detail</div>,
+  });
+  const router = createRouter({
+    routeTree: rootRoute.addChildren([
+      beansIndexRoute,
+      beansNewRoute,
+      beanDetailRoute,
+    ]),
+    history: createMemoryHistory({ initialEntries: ["/beans"] }),
+  });
+
+  render(
+    <QueryClientProvider client={qc}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
+  return router;
 }
 
 describe("BeanListPage", () => {
@@ -29,38 +60,67 @@ describe("BeanListPage", () => {
     );
   });
 
-  it("ダイアログから生豆を登録すると一覧に表示される", async () => {
-    const user = userEvent.setup();
-    renderPage();
+  it("登録済み Bean が一覧に表示される（name, origin, stockG）", async () => {
+    await db.beans.put({
+      id: crypto.randomUUID(),
+      name: "エチオピア イルガチェフェ",
+      origin: "エチオピア",
+      productName: "G1",
+      shopName: "",
+      purchasedAt: null,
+      importedAt: null,
+      stockG: 500,
+      bestLogId: null,
+      note: "",
+    });
 
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByText("エチオピア イルガチェフェ")).toBeInTheDocument(),
+    );
+    expect(screen.getByText(/エチオピア$/)).toBeInTheDocument();
+    expect(screen.getByText("在庫: 500g")).toBeInTheDocument();
+  });
+
+  it("「生豆を追加」ボタンで /beans/new へ遷移する", async () => {
+    const user = userEvent.setup();
+    const router = renderPage();
     await waitFor(() =>
       expect(screen.getByText("生豆が登録されていません")).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByRole("button", { name: "生豆を追加" }));
-
-    await user.type(screen.getByLabelText("名前"), "エチオピア イルガチェフェ");
-    await user.type(screen.getByLabelText("在庫 (g)"), "500");
-
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await user.click(screen.getByRole("link", { name: "生豆を追加" }));
 
     await waitFor(() =>
-      expect(screen.getByText("エチオピア イルガチェフェ")).toBeInTheDocument(),
+      expect(router.state.location.pathname).toBe("/beans/new"),
     );
   });
 
-  it("name が空のまま登録するとバリデーションエラーが表示される", async () => {
+  it("カードをクリックすると詳細画面 /beans/$beanId に遷移する", async () => {
+    const id = crypto.randomUUID();
+    await db.beans.put({
+      id,
+      name: "ブラジル セラード",
+      origin: "ブラジル",
+      productName: "",
+      shopName: "",
+      purchasedAt: null,
+      importedAt: null,
+      stockG: 200,
+      bestLogId: null,
+      note: "",
+    });
+
     const user = userEvent.setup();
-    renderPage();
+    const router = renderPage();
+    await waitFor(() =>
+      expect(screen.getByText("ブラジル セラード")).toBeInTheDocument(),
+    );
+
+    await user.click(screen.getByRole("link", { name: /ブラジル セラード/ }));
 
     await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "生豆を追加" }),
-      ).toBeInTheDocument(),
+      expect(router.state.location.pathname).toBe(`/beans/${id}`),
     );
-    await user.click(screen.getByRole("button", { name: "生豆を追加" }));
-    await user.click(screen.getByRole("button", { name: "登録" }));
-
-    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
   });
 });

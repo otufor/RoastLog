@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { BeanListPage } from "@/components/BeanListPage";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-  component: BeanListPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/beans" });
+  },
 });
