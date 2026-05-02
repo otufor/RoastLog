@@ -1,3 +1,4 @@
+import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,11 @@ import {
   useRoastDevices,
   useUpdateRoastDevice,
 } from "@/hooks/useRoastDevices";
-import type { CreateRoastDeviceInput, RoastDevice } from "@/schemas/masterData";
+import {
+  type CreateRoastDeviceInput,
+  CreateRoastDeviceInputSchema,
+  type RoastDevice,
+} from "@/schemas/masterData";
 
 type Draft = { mode: "create" } | { mode: "edit"; device: RoastDevice } | null;
 
@@ -100,42 +105,69 @@ function RoastDeviceForm({
   onSubmit: (input: CreateRoastDeviceInput) => void | Promise<void>;
   onCancel: () => void;
 }) {
-  const [name, setName] = useState(defaultValues.name);
-  const [method, setMethod] = useState(defaultValues.method);
-  const [note, setNote] = useState(defaultValues.note);
+  const form = useForm({
+    defaultValues,
+    validators: { onSubmit: CreateRoastDeviceInputSchema },
+    onSubmit: async ({ value }) => {
+      await onSubmit(value);
+    },
+  });
 
   return (
     <form
-      onSubmit={async (e) => {
+      onSubmit={(e) => {
         e.preventDefault();
-        await onSubmit({ name, method, note });
+        form.handleSubmit();
       }}
       className="flex flex-col gap-4"
     >
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="roast-device-name">名前</Label>
-        <Input
-          id="roast-device-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="roast-device-method">方式</Label>
-        <Input
-          id="roast-device-method"
-          value={method}
-          onChange={(e) => setMethod(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="roast-device-note">メモ</Label>
-        <Input
-          id="roast-device-note"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-        />
-      </div>
+      <form.Field name="name">
+        {(field) => (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="roast-device-name">名前</Label>
+            <Input
+              id="roast-device-name"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((err) =>
+              err ? (
+                <span
+                  key={err.message}
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {err.message}
+                </span>
+              ) : null,
+            )}
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="method">
+        {(field) => (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="roast-device-method">方式</Label>
+            <Input
+              id="roast-device-method"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="note">
+        {(field) => (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="roast-device-note">メモ</Label>
+            <Input
+              id="roast-device-note"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+          </div>
+        )}
+      </form.Field>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           キャンセル

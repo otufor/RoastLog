@@ -78,6 +78,18 @@ describe("RoastDeviceSettings", () => {
     expect(screen.queryByText("weroast HOME ROASTER")).not.toBeInTheDocument();
   });
 
+  it("名前が空の場合は保存されない", async () => {
+    const user = userEvent.setup();
+    renderSection();
+
+    await user.click(screen.getByRole("button", { name: "焙煎機を追加" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "保存" }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await db.roastDevices.count()).toBe(0);
+  });
+
   it("「削除」ボタンで消える", async () => {
     await db.roastDevices.add({
       id: "x",

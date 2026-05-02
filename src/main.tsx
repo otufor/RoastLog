@@ -19,7 +19,7 @@ declare module "@tanstack/react-router" {
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("#root element not found");
 
-seedMasterData(db).then(() => {
+const renderApp = () => {
   createRoot(rootElement).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
@@ -27,4 +27,11 @@ seedMasterData(db).then(() => {
       </QueryClientProvider>
     </StrictMode>,
   );
-});
+};
+
+seedMasterData(db)
+  .then(renderApp)
+  .catch((err) => {
+    console.error("seedMasterData failed, rendering anyway:", err);
+    renderApp();
+  });

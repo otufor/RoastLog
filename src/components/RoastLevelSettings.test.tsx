@@ -77,6 +77,19 @@ describe("RoastLevelSettings", () => {
     expect(screen.queryByText("中煎り")).not.toBeInTheDocument();
   });
 
+  it("ラベルが空の場合は保存されない", async () => {
+    const user = userEvent.setup();
+    renderSection();
+
+    await user.click(screen.getByRole("button", { name: "焙煎度を追加" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.clear(within(dialog).getByLabelText("ラベル"));
+    await user.click(within(dialog).getByRole("button", { name: "保存" }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await db.roastLevels.count()).toBe(0);
+  });
+
   it("「削除」ボタンで RoastLevel が消える", async () => {
     await db.roastLevels.add({
       id: "x",

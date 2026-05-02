@@ -1,3 +1,4 @@
+import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,11 @@ import {
   useRoastLevels,
   useUpdateRoastLevel,
 } from "@/hooks/useRoastLevels";
-import type { CreateRoastLevelInput, RoastLevel } from "@/schemas/masterData";
+import {
+  type CreateRoastLevelInput,
+  CreateRoastLevelInputSchema,
+  type RoastLevel,
+} from "@/schemas/masterData";
 
 type Draft = { mode: "create" } | { mode: "edit"; level: RoastLevel } | null;
 
@@ -98,43 +103,81 @@ function RoastLevelForm({
   onSubmit: (input: CreateRoastLevelInput) => void | Promise<void>;
   onCancel: () => void;
 }) {
-  const [label, setLabel] = useState(defaultValues.label);
-  const [color, setColor] = useState(defaultValues.color);
-  const [order, setOrder] = useState(defaultValues.order);
+  const form = useForm({
+    defaultValues,
+    validators: { onSubmit: CreateRoastLevelInputSchema },
+    onSubmit: async ({ value }) => {
+      await onSubmit(value);
+    },
+  });
 
   return (
     <form
-      onSubmit={async (e) => {
+      onSubmit={(e) => {
         e.preventDefault();
-        await onSubmit({ label, color, order });
+        form.handleSubmit();
       }}
       className="flex flex-col gap-4"
     >
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="roast-level-label">ラベル</Label>
-        <Input
-          id="roast-level-label"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="roast-level-color">カラー (#hex)</Label>
-        <Input
-          id="roast-level-color"
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="roast-level-order">並び順</Label>
-        <Input
-          id="roast-level-order"
-          type="number"
-          value={order}
-          onChange={(e) => setOrder(Number(e.target.value))}
-        />
-      </div>
+      <form.Field name="label">
+        {(field) => (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="roast-level-label">ラベル</Label>
+            <Input
+              id="roast-level-label"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((err) =>
+              err ? (
+                <span
+                  key={err.message}
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {err.message}
+                </span>
+              ) : null,
+            )}
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="color">
+        {(field) => (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="roast-level-color">カラー (#hex)</Label>
+            <Input
+              id="roast-level-color"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((err) =>
+              err ? (
+                <span
+                  key={err.message}
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {err.message}
+                </span>
+              ) : null,
+            )}
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="order">
+        {(field) => (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="roast-level-order">並び順</Label>
+            <Input
+              id="roast-level-order"
+              type="number"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(Number(e.target.value))}
+            />
+          </div>
+        )}
+      </form.Field>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           キャンセル

@@ -146,7 +146,7 @@ RoastLevel {
 
 FlavorTag {
   id    : string
-  label : string  // 例: "フローラル"
+  name  : string  // 例: "フローラル"
   color : string  // hex
 }
 
@@ -157,8 +157,8 @@ FlavorTag {
 
 RoastDevice {
   id    : string
-  name  : string  // 例: "weroast HOME ROASTER"
-  type  : string  // 例: "熱風式"
+  name  : string    // 例: "weroast HOME ROASTER"
+  method: string    // 例: "熱風式"
   note  : string
 }
 ```

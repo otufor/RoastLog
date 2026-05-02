@@ -1,3 +1,4 @@
+import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,11 @@ import {
   useFlavorTags,
   useUpdateFlavorTag,
 } from "@/hooks/useFlavorTags";
-import type { CreateFlavorTagInput, FlavorTag } from "@/schemas/masterData";
+import {
+  type CreateFlavorTagInput,
+  CreateFlavorTagInputSchema,
+  type FlavorTag,
+} from "@/schemas/masterData";
 
 type Draft = { mode: "create" } | { mode: "edit"; tag: FlavorTag } | null;
 
@@ -96,33 +101,68 @@ function FlavorTagForm({
   onSubmit: (input: CreateFlavorTagInput) => void | Promise<void>;
   onCancel: () => void;
 }) {
-  const [name, setName] = useState(defaultValues.name);
-  const [color, setColor] = useState(defaultValues.color);
+  const form = useForm({
+    defaultValues,
+    validators: { onSubmit: CreateFlavorTagInputSchema },
+    onSubmit: async ({ value }) => {
+      await onSubmit(value);
+    },
+  });
 
   return (
     <form
-      onSubmit={async (e) => {
+      onSubmit={(e) => {
         e.preventDefault();
-        await onSubmit({ name, color });
+        form.handleSubmit();
       }}
       className="flex flex-col gap-4"
     >
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="flavor-tag-name">名前</Label>
-        <Input
-          id="flavor-tag-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="flavor-tag-color">カラー (#hex)</Label>
-        <Input
-          id="flavor-tag-color"
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-        />
-      </div>
+      <form.Field name="name">
+        {(field) => (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="flavor-tag-name">名前</Label>
+            <Input
+              id="flavor-tag-name"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((err) =>
+              err ? (
+                <span
+                  key={err.message}
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {err.message}
+                </span>
+              ) : null,
+            )}
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="color">
+        {(field) => (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="flavor-tag-color">カラー (#hex)</Label>
+            <Input
+              id="flavor-tag-color"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((err) =>
+              err ? (
+                <span
+                  key={err.message}
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {err.message}
+                </span>
+              ) : null,
+            )}
+          </div>
+        )}
+      </form.Field>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           キャンセル
