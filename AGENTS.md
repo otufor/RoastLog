@@ -71,6 +71,9 @@ Read `CONTEXT.md` before naming anything. Key terms: **RoastLog** (not "session"
 
 ## Agent skills
 
+### Autonomous operation
+Workflow, DoD, and decision boundaries when running between user turns. **Read this first** when picking up unattended work. See `docs/agents/autonomous-operation.md`.
+
 ### Issue tracker
 Issues live in GitHub Issues. See `docs/agents/issue-tracker.md`.
 
