@@ -16,9 +16,9 @@ const FILTERS = [
 
 export function RoastLogListPage() {
   const [filter, setFilter] = useState<string>("all");
-  const { data: logs = [], isLoading } = useRoastLogs();
-  const { data: beans = [] } = useBeans();
-  const { data: levels = [] } = useRoastLevels();
+  const { data: logs = [], isLoading: logsLoading } = useRoastLogs();
+  const { data: beans = [], isLoading: beansLoading } = useBeans();
+  const { data: levels = [], isLoading: levelsLoading } = useRoastLevels();
 
   const beanMap = useMemo(
     () => Object.fromEntries(beans.map((b) => [b.id, b])),
@@ -39,7 +39,7 @@ export function RoastLogListPage() {
     [logs],
   );
 
-  if (isLoading) return null;
+  if (logsLoading || beansLoading || levelsLoading) return null;
 
   return (
     <div
