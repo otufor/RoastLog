@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { RoastBadge } from "@/components/RoastBadge";
 import { StarRating } from "@/components/StarRating";
 import { calcWeightLossRate } from "@/domain/roastLog";
@@ -20,23 +20,13 @@ export function RoastLogListPage() {
   const { data: beans = [], isLoading: beansLoading } = useBeans();
   const { data: levels = [], isLoading: levelsLoading } = useRoastLevels();
 
-  const beanMap = useMemo(
-    () => Object.fromEntries(beans.map((b) => [b.id, b])),
-    [beans],
-  );
-  const levelMap = useMemo(
-    () => Object.fromEntries(levels.map((l) => [l.id, l])),
-    [levels],
-  );
-  const bestLogIds = useMemo(
-    () => new Set(beans.map((b) => b.bestLogId).filter(Boolean)),
-    [beans],
-  );
+  const beanMap = Object.fromEntries(beans.map((b) => [b.id, b]));
+  const levelMap = Object.fromEntries(levels.map((l) => [l.id, l]));
+  const bestLogIds = new Set(beans.map((b) => b.bestLogId).filter(Boolean));
 
   // TODO: filter chips (bean/roast/score/date) are UI stubs; apply filter logic when implemented
-  const sorted = useMemo(
-    () => [...logs].sort((a, b) => b.roastDate.localeCompare(a.roastDate)),
-    [logs],
+  const sorted = [...logs].sort((a, b) =>
+    b.roastDate.localeCompare(a.roastDate),
   );
 
   if (logsLoading || beansLoading || levelsLoading) return null;
