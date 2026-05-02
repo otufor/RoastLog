@@ -53,6 +53,7 @@ Violations of these rules fail the pre-commit hook.
 - **TanStack Form** — Use `validators: { onSubmit: SomeZodSchema }` directly. No adapter needed; Zod v4 implements Standard Schema and is auto-detected (ADR-0006). In browser-mode Vitest tests, `vi` must be imported explicitly: `import { vi } from "vitest"`.
 - **Stock decrement** — Only on RoastLog create, never on edit/delete (ADR-0002).
 - **TanStack Router** — Routes live in `src/routes/`. `routeTree.gen.ts` is auto-generated; never edit it.
+- **Date parsing in domain** — Never `new Date("YYYY-MM-DD")`; it is parsed as UTC midnight and breaks `.getMonth()` etc. for users west of UTC. Build dates from local components (ADR-0007).
 
 ### Test harness
 
