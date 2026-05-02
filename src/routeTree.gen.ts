@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BeansIndexRouteImport } from './routes/beans.index'
 import { Route as BeansNewRouteImport } from './routes/beans.new'
 import { Route as BeansBeanIdIndexRouteImport } from './routes/beans.$beanId.index'
 import { Route as BeansBeanIdEditRouteImport } from './routes/beans.$beanId.edit'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const BeansBeanIdEditRoute = BeansBeanIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
   '/beans/': typeof BeansIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
   '/beans': typeof BeansIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
   '/beans/': typeof BeansIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
@@ -67,15 +76,23 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/settings'
     | '/beans/new'
     | '/beans/'
     | '/beans/$beanId/edit'
     | '/beans/$beanId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/beans/new' | '/beans' | '/beans/$beanId/edit' | '/beans/$beanId'
+  to:
+    | '/'
+    | '/settings'
+    | '/beans/new'
+    | '/beans'
+    | '/beans/$beanId/edit'
+    | '/beans/$beanId'
   id:
     | '__root__'
     | '/'
+    | '/settings'
     | '/beans/new'
     | '/beans/'
     | '/beans/$beanId/edit'
@@ -84,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SettingsRoute: typeof SettingsRoute
   BeansNewRoute: typeof BeansNewRoute
   BeansIndexRoute: typeof BeansIndexRoute
   BeansBeanIdEditRoute: typeof BeansBeanIdEditRoute
@@ -92,6 +110,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -132,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SettingsRoute: SettingsRoute,
   BeansNewRoute: BeansNewRoute,
   BeansIndexRoute: BeansIndexRoute,
   BeansBeanIdEditRoute: BeansBeanIdEditRoute,
