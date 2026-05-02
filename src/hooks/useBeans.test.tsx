@@ -116,7 +116,7 @@ describe("useBeans", () => {
     expect(bean.current.data?.name).toBe("ケニア キアンビリ");
   });
 
-  it("useBean に存在しない id を渡すと undefined を返す", async () => {
+  it("useBean に存在しない id を渡すと null を返す", async () => {
     const { result } = renderHook(() => useBean("missing-id"), {
       wrapper: makeWrapper(makeQc()),
     });

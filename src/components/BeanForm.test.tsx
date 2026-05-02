@@ -53,7 +53,7 @@ describe("BeanForm", () => {
     });
   });
 
-  it("name が空のまま送信するとバリデーションエラーが表示される", async () => {
+  it("name が空のまま送信するとバリデーションエラーメッセージが表示される", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(
@@ -65,7 +65,9 @@ describe("BeanForm", () => {
     );
     await user.click(screen.getByRole("button", { name: "登録" }));
 
-    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent("名前は必須です"),
+    );
     expect(onSubmit).not.toHaveBeenCalled();
   });
 

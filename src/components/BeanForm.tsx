@@ -73,15 +73,17 @@ export function BeanForm({
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
             />
-            {field.state.meta.errors.map((err) => (
-              <span
-                key={String(err)}
-                role="alert"
-                className="text-sm text-destructive"
-              >
-                {String(err)}
-              </span>
-            ))}
+            {field.state.meta.errors.map((err) =>
+              err ? (
+                <span
+                  key={err.message}
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {err.message}
+                </span>
+              ) : null,
+            )}
           </div>
         )}
       </form.Field>

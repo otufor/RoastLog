@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react/pure";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BeanDetailPage } from "@/components/BeanDetailPage";
 import { db } from "@/db";
 
@@ -49,7 +49,14 @@ describe("BeanDetailPage", () => {
     await db.beans.clear();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("全フィールドと購入からの経過月数を表示する", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-05-02"));
+
     const id = crypto.randomUUID();
     await db.beans.put({
       id,
@@ -76,7 +83,7 @@ describe("BeanDetailPage", () => {
     expect(screen.getByText("2026-04-01")).toBeInTheDocument();
     expect(screen.getByText("2026-02-15")).toBeInTheDocument();
     expect(screen.getByText("フローラルで好み")).toBeInTheDocument();
-    // 経過月数: 購入日 2026-04-01, 今日想定 2026-05-02 → 1 ヶ月
+    // 経過月数: 購入日 2026-04-01, 今日固定 2026-05-02 → 1 ヶ月
     expect(screen.getByText(/1 ヶ月/)).toBeInTheDocument();
   });
 
