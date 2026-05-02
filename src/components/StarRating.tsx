@@ -16,14 +16,14 @@ export function StarRating({ value, max = 5, size = 16, onChange }: Props) {
     >
       {Array.from({ length: max }).map((_, i) => {
         const filled = value != null && i < value;
-        const label = `${i + 1}星`;
+        const starLabel = `${i + 1}星`;
         if (onChange) {
           return (
             <button
               // biome-ignore lint/suspicious/noArrayIndexKey: star positions are positional by design
               key={i}
               type="button"
-              aria-label={label}
+              aria-label={starLabel}
               onClick={() => onChange(i + 1)}
               style={{
                 background: "transparent",

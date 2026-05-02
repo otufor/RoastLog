@@ -8,7 +8,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react/pure";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { SettingsPage } from "@/components/SettingsPage";
 import { db } from "@/db";
 
@@ -39,6 +39,12 @@ function renderPage() {
 
 describe("SettingsPage", () => {
   beforeEach(async () => {
+    await db.roastLevels.clear();
+    await db.flavorTags.clear();
+    await db.roastDevices.clear();
+  });
+
+  afterEach(async () => {
     await db.roastLevels.clear();
     await db.flavorTags.clear();
     await db.roastDevices.clear();

@@ -14,6 +14,7 @@ const FILTERS = [
 ] as const;
 
 function calcWeightLossRate(before: number, after: number): number {
+  if (before <= 0) return 0;
   return (1 - after / before) * 100;
 }
 
@@ -36,6 +37,7 @@ export function RoastLogListPage() {
     [beans],
   );
 
+  // TODO: filter chips (bean/roast/score/date) are UI stubs; apply filter logic when implemented
   const sorted = useMemo(
     () => [...logs].sort((a, b) => b.roastDate.localeCompare(a.roastDate)),
     [logs],
@@ -312,6 +314,7 @@ export function RoastLogListPage() {
           pointerEvents: "none",
         }}
       >
+        {/* TODO: add onClick to navigate to /logs/new once that route is created */}
         <button
           type="button"
           style={{

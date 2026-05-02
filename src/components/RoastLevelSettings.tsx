@@ -179,6 +179,17 @@ function RoastLevelForm({
               value={field.state.value}
               onChange={(e) => field.handleChange(Number(e.target.value))}
             />
+            {field.state.meta.errors.map((err) =>
+              err ? (
+                <span
+                  key={err.message}
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {err.message}
+                </span>
+              ) : null,
+            )}
           </div>
         )}
       </form.Field>

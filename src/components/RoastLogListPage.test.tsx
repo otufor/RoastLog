@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react/pure";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { RoastLogListPage } from "@/components/RoastLogListPage";
 import { db } from "@/db";
 import type { Bean } from "@/schemas/bean";
@@ -83,6 +83,12 @@ function renderPage() {
 
 describe("RoastLogListPage", () => {
   beforeEach(async () => {
+    await db.roastLogs.clear();
+    await db.beans.clear();
+    await db.roastLevels.clear();
+  });
+
+  afterEach(async () => {
     await db.roastLogs.clear();
     await db.beans.clear();
     await db.roastLevels.clear();

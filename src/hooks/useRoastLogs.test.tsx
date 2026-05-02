@@ -124,7 +124,7 @@ describe("useRoastLogs", () => {
   it("useDeleteRoastLog で削除すると useRoastLogs から消える", async () => {
     await db.beans.put({
       id: BASE_INPUT.beanId,
-      name: "エチオピア イルガ��ェフェ",
+      name: "エチオピア イルガチェフェ",
       origin: "エチオピア",
       productName: "",
       shopName: "",
