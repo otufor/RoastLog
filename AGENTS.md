@@ -50,7 +50,7 @@ Violations of these rules fail the pre-commit hook.
 
 - **Zod v4 schemas** — `src/schemas/` is the only place types are defined. Use `BeanSchema.parse()` on reads from IndexedDB and API responses; the TypeScript type alone is sufficient for internal writes.
 - **TanStack Query + Repository pattern** — Tauri migration only requires replacing `src/repositories/` implementations (ADR-0001).
-- **TanStack Form** — Use `validators: { onSubmit: SomeZodSchema }` directly. No adapter needed; Zod v4 implements Standard Schema and is auto-detected (ADR-0006). In browser-mode Vitest tests, `vi` must be imported explicitly: `import { vi } from "vitest"`.
+- **TanStack Form** — Use `validators: { onSubmit: SomeZodSchema }` directly. No adapter needed; Zod v4 implements Standard Schema and is auto-detected (ADR-0006). In browser-mode Vitest tests, `vi` must be imported explicitly: `import { vi } from "vitest"`. All form components in `src/components/` must use TanStack Form with `validators: { onSubmit: Schema }`. Plain `useState` forms bypass Zod validation — repositories do not validate on write, so the form is the sole guard against invalid data entering IndexedDB.
 - **Stock decrement** — Only on RoastLog create, never on edit/delete (ADR-0002).
 - **TanStack Router** — Routes live in `src/routes/`. `routeTree.gen.ts` is auto-generated; never edit it.
 - **Date parsing in domain** — Never `new Date("YYYY-MM-DD")`; it is parsed as UTC midnight and breaks `.getMonth()` etc. for users west of UTC. Build dates from local components (ADR-0007).
