@@ -49,6 +49,35 @@ describe("RoastDeviceSettings", () => {
     );
   });
 
+  it("「編集」ボタンで既存の RoastDevice を更新できる", async () => {
+    await db.roastDevices.add({
+      id: "e",
+      name: "weroast HOME ROASTER",
+      method: "熱風式",
+      note: "",
+    });
+
+    const user = userEvent.setup();
+    renderSection();
+    await waitFor(() =>
+      expect(screen.getByText("weroast HOME ROASTER")).toBeInTheDocument(),
+    );
+
+    const item = screen.getByRole("listitem");
+    await user.click(within(item).getByRole("button", { name: "編集" }));
+
+    const dialog = await screen.findByRole("dialog");
+    const nameInput = within(dialog).getByLabelText("名前");
+    await user.clear(nameInput);
+    await user.type(nameInput, "Aillio Bullet R1");
+    await user.click(within(dialog).getByRole("button", { name: "保存" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Aillio Bullet R1")).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("weroast HOME ROASTER")).not.toBeInTheDocument();
+  });
+
   it("「削除」ボタンで消える", async () => {
     await db.roastDevices.add({
       id: "x",

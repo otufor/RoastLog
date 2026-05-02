@@ -50,6 +50,33 @@ describe("RoastLevelSettings", () => {
     await waitFor(() => expect(screen.getByText("中煎り")).toBeInTheDocument());
   });
 
+  it("「編集」ボタンで既存の RoastLevel を更新できる", async () => {
+    await db.roastLevels.add({
+      id: "e",
+      label: "中煎り",
+      color: "#B06B1E",
+      order: 3,
+    });
+
+    const user = userEvent.setup();
+    renderSection();
+    await waitFor(() => expect(screen.getByText("中煎り")).toBeInTheDocument());
+
+    const item = screen.getByRole("listitem");
+    await user.click(within(item).getByRole("button", { name: "編集" }));
+
+    const dialog = await screen.findByRole("dialog");
+    const labelInput = within(dialog).getByLabelText("ラベル");
+    await user.clear(labelInput);
+    await user.type(labelInput, "中深煎り");
+    await user.click(within(dialog).getByRole("button", { name: "保存" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("中深煎り")).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("中煎り")).not.toBeInTheDocument();
+  });
+
   it("「削除」ボタンで RoastLevel が消える", async () => {
     await db.roastLevels.add({
       id: "x",

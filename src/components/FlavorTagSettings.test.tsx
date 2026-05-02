@@ -48,6 +48,30 @@ describe("FlavorTagSettings", () => {
     await waitFor(() => expect(screen.getByText("ベリー")).toBeInTheDocument());
   });
 
+  it("「編集」ボタンで既存の FlavorTag を更新できる", async () => {
+    await db.flavorTags.add({ id: "e", name: "フローラル", color: "#F9A8D4" });
+
+    const user = userEvent.setup();
+    renderSection();
+    await waitFor(() =>
+      expect(screen.getByText("フローラル")).toBeInTheDocument(),
+    );
+
+    const item = screen.getByRole("listitem");
+    await user.click(within(item).getByRole("button", { name: "編集" }));
+
+    const dialog = await screen.findByRole("dialog");
+    const nameInput = within(dialog).getByLabelText("名前");
+    await user.clear(nameInput);
+    await user.type(nameInput, "シトラス");
+    await user.click(within(dialog).getByRole("button", { name: "保存" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("シトラス")).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("フローラル")).not.toBeInTheDocument();
+  });
+
   it("「削除」ボタンで消える", async () => {
     await db.flavorTags.add({
       id: "x",
