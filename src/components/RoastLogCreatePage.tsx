@@ -6,12 +6,9 @@ import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
 import type { CreateRoastLogInput } from "@/schemas/roastLog";
 
-const today = new Date();
-const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-
 const EMPTY_DEFAULTS: CreateRoastLogInput = {
   beanId: "",
-  roastDate: todayStr,
+  roastDate: "",
   roastLevelId: "",
   roastDeviceId: null,
   roastDurationSec: 0,
@@ -38,8 +35,11 @@ export function RoastLogCreatePage() {
 
   if (beansLoading || levelsLoading || devicesLoading) return null;
 
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const defaultValues: CreateRoastLogInput = {
     ...EMPTY_DEFAULTS,
+    roastDate: todayStr,
     beanId: beans[0]?.id ?? "",
     roastLevelId: levels[0]?.id ?? "",
     roastDeviceId: devices[0]?.id ?? null,

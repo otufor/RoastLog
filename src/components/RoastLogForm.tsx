@@ -194,8 +194,8 @@ export function RoastLogForm({
           <div className="flex flex-col gap-1">
             <Label htmlFor="log-roast-device-id">焙煎機</Label>
             <Select
-              value={field.state.value}
-              onValueChange={(v) => field.handleChange(v ?? null)}
+              value={field.state.value ?? undefined}
+              onValueChange={(v) => field.handleChange(v === "" ? null : v)}
             >
               <SelectTrigger id="log-roast-device-id" className="w-full">
                 <SelectValue placeholder="なし" />
