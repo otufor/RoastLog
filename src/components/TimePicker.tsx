@@ -57,7 +57,9 @@ export function TimePicker({
       {!isNull && (
         <Picker
           value={pickerValue}
-          onChange={({ mm, ss }) => onChange(parseInt(mm) * 60 + parseInt(ss))}
+          onChange={({ mm, ss }) =>
+            onChange(parseInt(mm, 10) * 60 + parseInt(ss, 10))
+          }
           wheelMode="natural"
           height={120}
           itemHeight={40}
