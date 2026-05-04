@@ -14,8 +14,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LogsIndexRouteImport } from './routes/logs.index'
 import { Route as BeansIndexRouteImport } from './routes/beans.index'
 import { Route as AnalysisIndexRouteImport } from './routes/analysis.index'
+import { Route as LogsNewRouteImport } from './routes/logs.new'
 import { Route as BeansNewRouteImport } from './routes/beans.new'
+import { Route as LogsLogIdIndexRouteImport } from './routes/logs.$logId.index'
 import { Route as BeansBeanIdIndexRouteImport } from './routes/beans.$beanId.index'
+import { Route as LogsLogIdEditRouteImport } from './routes/logs.$logId.edit'
 import { Route as BeansBeanIdEditRouteImport } from './routes/beans.$beanId.edit'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -43,14 +46,29 @@ const AnalysisIndexRoute = AnalysisIndexRouteImport.update({
   path: '/analysis/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LogsNewRoute = LogsNewRouteImport.update({
+  id: '/logs/new',
+  path: '/logs/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BeansNewRoute = BeansNewRouteImport.update({
   id: '/beans/new',
   path: '/beans/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LogsLogIdIndexRoute = LogsLogIdIndexRouteImport.update({
+  id: '/logs/$logId/',
+  path: '/logs/$logId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BeansBeanIdIndexRoute = BeansBeanIdIndexRouteImport.update({
   id: '/beans/$beanId/',
   path: '/beans/$beanId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LogsLogIdEditRoute = LogsLogIdEditRouteImport.update({
+  id: '/logs/$logId/edit',
+  path: '/logs/$logId/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BeansBeanIdEditRoute = BeansBeanIdEditRouteImport.update({
@@ -63,32 +81,41 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
+  '/logs/new': typeof LogsNewRoute
   '/analysis/': typeof AnalysisIndexRoute
   '/beans/': typeof BeansIndexRoute
   '/logs/': typeof LogsIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
+  '/logs/$logId/edit': typeof LogsLogIdEditRoute
   '/beans/$beanId/': typeof BeansBeanIdIndexRoute
+  '/logs/$logId/': typeof LogsLogIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
+  '/logs/new': typeof LogsNewRoute
   '/analysis': typeof AnalysisIndexRoute
   '/beans': typeof BeansIndexRoute
   '/logs': typeof LogsIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
+  '/logs/$logId/edit': typeof LogsLogIdEditRoute
   '/beans/$beanId': typeof BeansBeanIdIndexRoute
+  '/logs/$logId': typeof LogsLogIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
   '/beans/new': typeof BeansNewRoute
+  '/logs/new': typeof LogsNewRoute
   '/analysis/': typeof AnalysisIndexRoute
   '/beans/': typeof BeansIndexRoute
   '/logs/': typeof LogsIndexRoute
   '/beans/$beanId/edit': typeof BeansBeanIdEditRoute
+  '/logs/$logId/edit': typeof LogsLogIdEditRoute
   '/beans/$beanId/': typeof BeansBeanIdIndexRoute
+  '/logs/$logId/': typeof LogsLogIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -96,42 +123,54 @@ export interface FileRouteTypes {
     | '/'
     | '/settings'
     | '/beans/new'
+    | '/logs/new'
     | '/analysis/'
     | '/beans/'
     | '/logs/'
     | '/beans/$beanId/edit'
+    | '/logs/$logId/edit'
     | '/beans/$beanId/'
+    | '/logs/$logId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/settings'
     | '/beans/new'
+    | '/logs/new'
     | '/analysis'
     | '/beans'
     | '/logs'
     | '/beans/$beanId/edit'
+    | '/logs/$logId/edit'
     | '/beans/$beanId'
+    | '/logs/$logId'
   id:
     | '__root__'
     | '/'
     | '/settings'
     | '/beans/new'
+    | '/logs/new'
     | '/analysis/'
     | '/beans/'
     | '/logs/'
     | '/beans/$beanId/edit'
+    | '/logs/$logId/edit'
     | '/beans/$beanId/'
+    | '/logs/$logId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SettingsRoute: typeof SettingsRoute
   BeansNewRoute: typeof BeansNewRoute
+  LogsNewRoute: typeof LogsNewRoute
   AnalysisIndexRoute: typeof AnalysisIndexRoute
   BeansIndexRoute: typeof BeansIndexRoute
   LogsIndexRoute: typeof LogsIndexRoute
   BeansBeanIdEditRoute: typeof BeansBeanIdEditRoute
+  LogsLogIdEditRoute: typeof LogsLogIdEditRoute
   BeansBeanIdIndexRoute: typeof BeansBeanIdIndexRoute
+  LogsLogIdIndexRoute: typeof LogsLogIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -171,6 +210,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalysisIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/logs/new': {
+      id: '/logs/new'
+      path: '/logs/new'
+      fullPath: '/logs/new'
+      preLoaderRoute: typeof LogsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/beans/new': {
       id: '/beans/new'
       path: '/beans/new'
@@ -178,11 +224,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BeansNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/logs/$logId/': {
+      id: '/logs/$logId/'
+      path: '/logs/$logId'
+      fullPath: '/logs/$logId/'
+      preLoaderRoute: typeof LogsLogIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/beans/$beanId/': {
       id: '/beans/$beanId/'
       path: '/beans/$beanId'
       fullPath: '/beans/$beanId/'
       preLoaderRoute: typeof BeansBeanIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/logs/$logId/edit': {
+      id: '/logs/$logId/edit'
+      path: '/logs/$logId/edit'
+      fullPath: '/logs/$logId/edit'
+      preLoaderRoute: typeof LogsLogIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/beans/$beanId/edit': {
@@ -199,11 +259,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SettingsRoute: SettingsRoute,
   BeansNewRoute: BeansNewRoute,
+  LogsNewRoute: LogsNewRoute,
   AnalysisIndexRoute: AnalysisIndexRoute,
   BeansIndexRoute: BeansIndexRoute,
   LogsIndexRoute: LogsIndexRoute,
   BeansBeanIdEditRoute: BeansBeanIdEditRoute,
+  LogsLogIdEditRoute: LogsLogIdEditRoute,
   BeansBeanIdIndexRoute: BeansBeanIdIndexRoute,
+  LogsLogIdIndexRoute: LogsLogIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
