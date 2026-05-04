@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { RoastBadge } from "@/components/RoastBadge";
 import { StarRating } from "@/components/StarRating";
@@ -15,6 +16,7 @@ const FILTERS = [
 ] as const;
 
 export function RoastLogListPage() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<string>("all");
   const { data: logs = [], isLoading: logsLoading } = useRoastLogs();
   const { data: beans = [], isLoading: beansLoading } = useBeans();
@@ -195,8 +197,12 @@ export function RoastLogListPage() {
             );
 
             return (
-              <div
+              <button
+                type="button"
                 key={log.id}
+                onClick={() =>
+                  navigate({ to: "/logs/$logId", params: { logId: log.id } })
+                }
                 style={{
                   background: "var(--card)",
                   border: isDanger
@@ -206,6 +212,9 @@ export function RoastLogListPage() {
                   padding: 12,
                   boxShadow:
                     "0 1px 2px rgba(28,23,20,0.04), 0 1px 1px rgba(28,23,20,0.03)",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  width: "100%",
                 }}
               >
                 <div
@@ -281,7 +290,7 @@ export function RoastLogListPage() {
                     </span>
                   )}
                 </div>
-              </div>
+              </button>
             );
           })
         )}
@@ -300,9 +309,9 @@ export function RoastLogListPage() {
           pointerEvents: "none",
         }}
       >
-        {/* TODO: add onClick to navigate to /logs/new once that route is created */}
         <button
           type="button"
+          onClick={() => navigate({ to: "/logs/new" })}
           style={{
             pointerEvents: "auto",
             width: "100%",
