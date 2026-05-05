@@ -62,7 +62,7 @@ describe("BeanListPage", () => {
   it("生豆が 0 件のとき空状態メッセージが表示される", async () => {
     renderPage();
     await waitFor(() =>
-      expect(screen.getByText("生豆が登録されていません")).toBeInTheDocument(),
+      expect(screen.getByText("豆がありません")).toBeInTheDocument(),
     );
   });
 
@@ -78,24 +78,30 @@ describe("BeanListPage", () => {
       stockG: 500,
       bestLogId: null,
       note: "",
+      totalG: 0,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
     });
 
     renderPage();
     await waitFor(() =>
       expect(screen.getByText("エチオピア イルガチェフェ")).toBeInTheDocument(),
     );
-    expect(screen.getByText(/エチオピア$/)).toBeInTheDocument();
-    expect(screen.getByText("在庫: 500g")).toBeInTheDocument();
+    expect(screen.getByText("エチオピア")).toBeInTheDocument();
+    expect(screen.getByText(/残 100%/)).toBeInTheDocument();
   });
 
-  it("「生豆を追加」ボタンで /beans/new へ遷移する", async () => {
+  it("「豆を追加」ボタンで /beans/new へ遷移する", async () => {
     const user = userEvent.setup();
     const router = renderPage();
     await waitFor(() =>
-      expect(screen.getByText("生豆が登録されていません")).toBeInTheDocument(),
+      expect(screen.getByText("豆がありません")).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByRole("link", { name: "生豆を追加" }));
+    await user.click(screen.getByRole("button", { name: "豆を追加" }));
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/beans/new"),
@@ -115,6 +121,12 @@ describe("BeanListPage", () => {
       stockG: 200,
       bestLogId: null,
       note: "",
+      totalG: 0,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
     });
 
     const user = userEvent.setup();
@@ -123,10 +135,37 @@ describe("BeanListPage", () => {
       expect(screen.getByText("ブラジル セラード")).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByRole("link", { name: /ブラジル セラード/ }));
+    await user.click(screen.getByRole("button", { name: /ブラジル セラード/ }));
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe(`/beans/${id}`),
     );
+  });
+
+  it("在庫切れ豆にバッジが表示される", async () => {
+    await db.beans.put({
+      id: crypto.randomUUID(),
+      name: "ケニア ニエリ",
+      origin: "ケニア",
+      productName: "",
+      shopName: "",
+      purchasedAt: null,
+      importedAt: null,
+      stockG: 0,
+      bestLogId: null,
+      note: "",
+      totalG: 300,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
+    });
+
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByText("ケニア ニエリ")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("在庫切れ")).toBeInTheDocument();
   });
 });

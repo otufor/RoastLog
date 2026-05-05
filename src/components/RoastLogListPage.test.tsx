@@ -30,6 +30,12 @@ const SAMPLE_BEAN: Bean = {
   stockG: 500,
   bestLogId: null,
   note: "",
+  totalG: 0,
+  flavorTagIds: [],
+  process: "",
+  region: "",
+  altitude: "",
+  variety: "",
 };
 
 const SAMPLE_LEVEL: RoastLevel = {

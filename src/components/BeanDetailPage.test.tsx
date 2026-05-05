@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react/pure";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BeanDetailPage } from "@/components/BeanDetailPage";
 import { db } from "@/db";
 
@@ -44,30 +44,49 @@ function renderAt(beanId: string) {
   return router;
 }
 
+const BASE_BEAN = {
+  origin: "",
+  productName: "",
+  shopName: "",
+  purchasedAt: null,
+  importedAt: null,
+  stockG: 100,
+  bestLogId: null,
+  note: "",
+  totalG: 0,
+  flavorTagIds: [] as string[],
+  process: "",
+  region: "",
+  altitude: "",
+  variety: "",
+} as const;
+
 describe("BeanDetailPage", () => {
   beforeEach(async () => {
-    await db.beans.clear();
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it("全フィールドと購入からの経過月数を表示する", async () => {
-    vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date("2026-05-02"));
-
+  it("スペックグリッドと在庫を表示する", async () => {
     const id = crypto.randomUUID();
     await db.beans.put({
+      ...BASE_BEAN,
       id,
       name: "エチオピア イルガチェフェ",
       origin: "エチオピア",
-      productName: "G1 ナチュラル",
+      region: "イルガチェフェ",
+      process: "Washed",
+      altitude: "1800m",
+      variety: "Heirloom",
       shopName: "丸山珈琲",
       purchasedAt: "2026-04-01",
-      importedAt: "2026-02-15",
       stockG: 320,
-      bestLogId: null,
+      totalG: 400,
       note: "フローラルで好み",
     });
 
@@ -77,29 +96,22 @@ describe("BeanDetailPage", () => {
       expect(screen.getByText("エチオピア イルガチェフェ")).toBeInTheDocument(),
     );
     expect(screen.getByText("エチオピア")).toBeInTheDocument();
-    expect(screen.getByText("G1 ナチュラル")).toBeInTheDocument();
+    expect(screen.getByText("イルガチェフェ")).toBeInTheDocument();
+    expect(screen.getByText("Washed")).toBeInTheDocument();
+    expect(screen.getByText("1800m")).toBeInTheDocument();
+    expect(screen.getByText("Heirloom")).toBeInTheDocument();
     expect(screen.getByText("丸山珈琲")).toBeInTheDocument();
-    expect(screen.getByText("320g")).toBeInTheDocument();
     expect(screen.getByText("2026-04-01")).toBeInTheDocument();
-    expect(screen.getByText("2026-02-15")).toBeInTheDocument();
     expect(screen.getByText("フローラルで好み")).toBeInTheDocument();
-    // 経過月数: 購入日 2026-04-01, 今日固定 2026-05-02 → 1 ヶ月
-    expect(screen.getByText(/1 ヶ月/)).toBeInTheDocument();
+    expect(screen.getByText("320")).toBeInTheDocument();
   });
 
   it("編集リンクで /beans/$beanId/edit に遷移できる", async () => {
     const id = crypto.randomUUID();
     await db.beans.put({
+      ...BASE_BEAN,
       id,
       name: "ブラジル",
-      origin: "",
-      productName: "",
-      shopName: "",
-      purchasedAt: null,
-      importedAt: null,
-      stockG: 100,
-      bestLogId: null,
-      note: "",
     });
     const user = userEvent.setup();
     const router = renderAt(id);
@@ -116,16 +128,9 @@ describe("BeanDetailPage", () => {
   it("削除を確認すると /beans に遷移する", async () => {
     const id = crypto.randomUUID();
     await db.beans.put({
+      ...BASE_BEAN,
       id,
       name: "コロンビア",
-      origin: "",
-      productName: "",
-      shopName: "",
-      purchasedAt: null,
-      importedAt: null,
-      stockG: 100,
-      bestLogId: null,
-      note: "",
     });
     const user = userEvent.setup();
     const router = renderAt(id);
@@ -144,16 +149,9 @@ describe("BeanDetailPage", () => {
   it("削除をキャンセルするとそのまま留まる", async () => {
     const id = crypto.randomUUID();
     await db.beans.put({
+      ...BASE_BEAN,
       id,
       name: "ケニア",
-      origin: "",
-      productName: "",
-      shopName: "",
-      purchasedAt: null,
-      importedAt: null,
-      stockG: 100,
-      bestLogId: null,
-      note: "",
     });
     const user = userEvent.setup();
     const router = renderAt(id);
@@ -165,5 +163,45 @@ describe("BeanDetailPage", () => {
     expect(router.state.location.pathname).toBe(`/beans/${id}`);
     expect(await db.beans.get(id)).toBeDefined();
     confirmSpy.mockRestore();
+  });
+
+  it("「在庫を更新」で増減モードが動作する", async () => {
+    const id = crypto.randomUUID();
+    await db.beans.put({
+      ...BASE_BEAN,
+      id,
+      name: "グアテマラ",
+      stockG: 200,
+      totalG: 400,
+    });
+
+    const user = userEvent.setup();
+    renderAt(id);
+
+    await waitFor(() =>
+      expect(screen.getByText("グアテマラ")).toBeInTheDocument(),
+    );
+
+    await user.click(screen.getByRole("button", { name: "在庫を更新" }));
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+
+    await user.type(screen.getByLabelText(/増減量/), "-50");
+    expect(screen.getByText("150g")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "更新する" }));
+
+    await waitFor(async () => {
+      const stored = await db.beans.get(id);
+      expect(stored?.stockG).toBe(150);
+    });
+  });
+
+  it("焙煎履歴がない場合「まだ焙煎していません」を表示する", async () => {
+    const id = crypto.randomUUID();
+    await db.beans.put({ ...BASE_BEAN, id, name: "パナマ" });
+
+    renderAt(id);
+    await waitFor(() => expect(screen.getByText("パナマ")).toBeInTheDocument());
+    expect(screen.getByText("まだ焙煎していません")).toBeInTheDocument();
   });
 });

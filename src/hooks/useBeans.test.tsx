@@ -57,6 +57,12 @@ describe("useBeans", () => {
         importedAt: null,
         stockG: 500,
         note: "",
+        totalG: 0,
+        flavorTagIds: [],
+        process: "",
+        region: "",
+        altitude: "",
+        variety: "",
       });
     });
 
@@ -83,6 +89,12 @@ describe("useBeans", () => {
         importedAt: null,
         stockG: 300,
         note: "",
+        totalG: 0,
+        flavorTagIds: [],
+        process: "",
+        region: "",
+        altitude: "",
+        variety: "",
       });
     });
     await waitFor(() => expect(beans.current.data).toHaveLength(1));
@@ -112,6 +124,12 @@ describe("useBeans", () => {
         importedAt: null,
         stockG: 400,
         note: "",
+        totalG: 0,
+        flavorTagIds: [],
+        process: "",
+        region: "",
+        altitude: "",
+        variety: "",
       });
     });
     await waitFor(() => expect(beans.current.data).toHaveLength(1));
@@ -149,6 +167,12 @@ describe("useBeans", () => {
         importedAt: null,
         stockG: 200,
         note: "",
+        totalG: 0,
+        flavorTagIds: [],
+        process: "",
+        region: "",
+        altitude: "",
+        variety: "",
       });
     });
     await waitFor(() => expect(beans.current.data).toHaveLength(1));

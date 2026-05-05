@@ -63,6 +63,12 @@ describe("BeanEditPage", () => {
       stockG: 200,
       bestLogId: null,
       note: "",
+      totalG: 0,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
     });
 
     const user = userEvent.setup();

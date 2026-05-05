@@ -11,6 +11,12 @@ export const BeanSchema = z.object({
   stockG: z.number(),
   bestLogId: z.string().uuid().nullable(),
   note: z.string(),
+  totalG: z.number().optional().default(0),
+  flavorTagIds: z.array(z.string()).optional().default([]),
+  process: z.string().optional().default(""),
+  region: z.string().optional().default(""),
+  altitude: z.string().optional().default(""),
+  variety: z.string().optional().default(""),
 });
 
 export type Bean = z.infer<typeof BeanSchema>;

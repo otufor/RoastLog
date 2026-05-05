@@ -28,6 +28,12 @@ const makeBean = (overrides: Partial<Bean> = {}): Bean => ({
   stockG: 500,
   bestLogId: null,
   note: "",
+  totalG: 0,
+  flavorTagIds: [],
+  process: "",
+  region: "",
+  altitude: "",
+  variety: "",
   ...overrides,
 });
 
