@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { RoastLogForm } from "@/components/RoastLogForm";
 import { useBeans } from "@/hooks/useBeans";
+import { useFlavorTags } from "@/hooks/useFlavorTags";
 import { useCreateRoastLog } from "@/hooks/useMutateRoastLog";
 import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
@@ -32,8 +33,11 @@ export function RoastLogCreatePage() {
   const { data: beans = [], isLoading: beansLoading } = useBeans();
   const { data: levels = [], isLoading: levelsLoading } = useRoastLevels();
   const { data: devices = [], isLoading: devicesLoading } = useRoastDevices();
+  const { data: flavorTags = [], isLoading: flavorTagsLoading } =
+    useFlavorTags();
 
-  if (beansLoading || levelsLoading || devicesLoading) return null;
+  if (beansLoading || levelsLoading || devicesLoading || flavorTagsLoading)
+    return null;
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -53,6 +57,7 @@ export function RoastLogCreatePage() {
         beans={beans}
         roastLevels={levels}
         roastDevices={devices}
+        flavorTags={flavorTags}
         submitLabel="登録"
         onSubmit={async (input: CreateRoastLogInput) => {
           const log = await mutateAsync(input);

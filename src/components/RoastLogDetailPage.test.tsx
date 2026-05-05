@@ -13,7 +13,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { RoastLogDetailPage } from "@/components/RoastLogDetailPage";
 import { db } from "@/db";
 import type { Bean } from "@/schemas/bean";
-import type { RoastDevice, RoastLevel } from "@/schemas/masterData";
+import type { FlavorTag, RoastDevice, RoastLevel } from "@/schemas/masterData";
 import type { RoastLog } from "@/schemas/roastLog";
 
 const BEAN: Bean = {
@@ -47,6 +47,12 @@ const DEVICE: RoastDevice = {
   name: "手網",
   method: "",
   note: "",
+};
+
+const FLAVOR_TAG: FlavorTag = {
+  id: "tag-floral",
+  name: "フローラル",
+  color: "#F472B6",
 };
 
 const LOG: RoastLog = {
@@ -161,6 +167,55 @@ describe("RoastLogDetailPage", () => {
       expect(router.state.location.pathname).toMatch(/\/edit$/),
     );
     expect(screen.getByText("編集ページ")).toBeInTheDocument();
+  });
+
+  it("tasting がある場合に 6 軸スコアとフレーバータグを表示する", async () => {
+    const logWithTasting: RoastLog = {
+      ...LOG,
+      tasting: {
+        flavorTags: [FLAVOR_TAG.id],
+        sweetness: 4,
+        acidity: 3,
+        body: 3,
+        bitterness: 2,
+        aftertaste: 4,
+        cleanliness: 5,
+      },
+      overallScore: 4,
+    };
+    await db.beans.put(BEAN);
+    await db.roastLevels.put(LEVEL);
+    await db.roastDevices.put(DEVICE);
+    await db.flavorTags.put(FLAVOR_TAG);
+    await db.roastLogs.put(logWithTasting);
+
+    renderDetailPage(LOG.id);
+
+    await waitFor(() =>
+      expect(screen.getByText("テイスティング")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("フローラル")).toBeInTheDocument();
+    expect(screen.getByText("甘さ")).toBeInTheDocument();
+    expect(screen.getByText("酸味")).toBeInTheDocument();
+    expect(screen.getByText("コク")).toBeInTheDocument();
+    expect(screen.getByText("苦み")).toBeInTheDocument();
+    expect(screen.getByText("後味")).toBeInTheDocument();
+    expect(screen.getByText("クリーン")).toBeInTheDocument();
+    expect(screen.getByText("総合評価")).toBeInTheDocument();
+  });
+
+  it("tasting が null のとき「テイスティング」セクションを表示しない", async () => {
+    await db.beans.put(BEAN);
+    await db.roastLevels.put(LEVEL);
+    await db.roastDevices.put(DEVICE);
+    await db.roastLogs.put(LOG);
+
+    renderDetailPage(LOG.id);
+
+    await waitFor(() =>
+      expect(screen.getByText("エチオピア イルガチェフェ")).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("テイスティング")).not.toBeInTheDocument();
   });
 
   it("「削除」ボタンでログを削除し一覧へ遷移する", async () => {

@@ -69,6 +69,7 @@ function renderForm(
       beans={[BEAN]}
       roastLevels={[LEVEL]}
       roastDevices={[DEVICE]}
+      flavorTags={[]}
       submitLabel="登録"
       onSubmit={onSubmit}
     />,

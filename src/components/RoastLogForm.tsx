@@ -1,5 +1,6 @@
 import { useForm, useStore } from "@tanstack/react-form";
 import { z } from "zod";
+import { StarRating } from "@/components/StarRating";
 import { TimePicker } from "@/components/TimePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,8 +16,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { calcWeightLossRate } from "@/domain/roastLog";
 import type { Bean } from "@/schemas/bean";
-import type { RoastDevice, RoastLevel } from "@/schemas/masterData";
+import type { FlavorTag, RoastDevice, RoastLevel } from "@/schemas/masterData";
 import type { CreateRoastLogInput } from "@/schemas/roastLog";
+
+const TastingAxisScore = z.number().int().min(1).max(5).nullable();
 
 const FormSchema = z.object({
   beanId: z.string().min(1, "豆を選択してください"),
@@ -34,6 +37,14 @@ const FormSchema = z.object({
     .positive("焙煎後重量は0より大きい値を入力してください"),
   indoorTempC: z.number().nullable(),
   processNote: z.string(),
+  flavorTagIds: z.array(z.string()),
+  sweetness: TastingAxisScore,
+  acidity: TastingAxisScore,
+  body: TastingAxisScore,
+  bitterness: TastingAxisScore,
+  aftertaste: TastingAxisScore,
+  cleanliness: TastingAxisScore,
+  overallScore: TastingAxisScore,
 });
 
 interface RoastLogFormProps {
@@ -41,6 +52,7 @@ interface RoastLogFormProps {
   beans: Bean[];
   roastLevels: RoastLevel[];
   roastDevices: RoastDevice[];
+  flavorTags: FlavorTag[];
   submitLabel: string;
   onSubmit: (input: CreateRoastLogInput) => void | Promise<void>;
 }
@@ -50,6 +62,7 @@ export function RoastLogForm({
   beans,
   roastLevels,
   roastDevices,
+  flavorTags,
   submitLabel,
   onSubmit,
 }: RoastLogFormProps) {
@@ -66,12 +79,45 @@ export function RoastLogForm({
       weightAfterG: defaultValues.weightAfterG,
       indoorTempC: defaultValues.indoorTempC,
       processNote: defaultValues.processNote,
+      flavorTagIds: defaultValues.tasting?.flavorTags ?? [],
+      sweetness: defaultValues.tasting?.sweetness ?? null,
+      acidity: defaultValues.tasting?.acidity ?? null,
+      body: defaultValues.tasting?.body ?? null,
+      bitterness: defaultValues.tasting?.bitterness ?? null,
+      aftertaste: defaultValues.tasting?.aftertaste ?? null,
+      cleanliness: defaultValues.tasting?.cleanliness ?? null,
+      overallScore: defaultValues.overallScore ?? null,
     },
     validators: { onSubmit: FormSchema },
     onSubmit: async ({ value }) => {
+      const {
+        flavorTagIds,
+        sweetness,
+        acidity,
+        body,
+        bitterness,
+        aftertaste,
+        cleanliness,
+        overallScore,
+        ...formRest
+      } = value;
+      const tasting =
+        sweetness && acidity && body && bitterness && aftertaste && cleanliness
+          ? {
+              flavorTags: flavorTagIds,
+              sweetness,
+              acidity,
+              body,
+              bitterness,
+              aftertaste,
+              cleanliness,
+            }
+          : null;
       await onSubmit({
         ...defaultValues,
-        ...value,
+        ...formRest,
+        tasting,
+        overallScore,
       });
     },
   });
@@ -350,6 +396,149 @@ export function RoastLogForm({
           </div>
         )}
       </form.Field>
+
+      {/* テイスティング */}
+      <div className="border-t pt-4 flex flex-col gap-4">
+        <p className="text-sm font-medium text-muted-foreground">
+          テイスティング（任意）
+        </p>
+
+        {/* フレーバーノート */}
+        {flavorTags.length > 0 && (
+          <form.Field name="flavorTagIds">
+            {(field) => (
+              <fieldset className="border-0 p-0 m-0">
+                <legend className="text-sm text-muted-foreground mb-2">
+                  フレーバーノート
+                </legend>
+                <div className="flex flex-wrap gap-2">
+                  {flavorTags.map((tag) => {
+                    const selected = field.state.value.includes(tag.id);
+                    return (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => {
+                          const next = selected
+                            ? field.state.value.filter((id) => id !== tag.id)
+                            : [...field.state.value, tag.id];
+                          field.handleChange(next);
+                        }}
+                        style={{
+                          background: selected ? `${tag.color}1A` : undefined,
+                          color: selected ? tag.color : undefined,
+                          borderColor: selected ? `${tag.color}66` : undefined,
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium cursor-pointer border ${
+                          selected
+                            ? ""
+                            : "border-border text-muted-foreground bg-muted"
+                        }`}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{
+                            background: selected
+                              ? tag.color
+                              : "var(--muted-foreground)",
+                          }}
+                        />
+                        {tag.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            )}
+          </form.Field>
+        )}
+
+        {/* 6軸評価 */}
+        <div className="flex flex-col gap-3">
+          <form.Field name="sweetness">
+            {(field) => (
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">甘さ</Label>
+                <StarRating
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="acidity">
+            {(field) => (
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">酸味</Label>
+                <StarRating
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="body">
+            {(field) => (
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">コク</Label>
+                <StarRating
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="bitterness">
+            {(field) => (
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">苦み</Label>
+                <StarRating
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="aftertaste">
+            {(field) => (
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">後味</Label>
+                <StarRating
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="cleanliness">
+            {(field) => (
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">クリーン</Label>
+                <StarRating
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                />
+              </div>
+            )}
+          </form.Field>
+        </div>
+
+        {/* 総合評価 */}
+        <div className="border-t pt-3">
+          <form.Field name="overallScore">
+            {(field) => (
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">総合評価</Label>
+                <StarRating
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                />
+              </div>
+            )}
+          </form.Field>
+        </div>
+      </div>
 
       <Button type="submit">{submitLabel}</Button>
     </form>

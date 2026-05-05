@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
+import { StarRating } from "@/components/StarRating";
 import { calcWeightLossRate } from "@/domain/roastLog";
 import { useBeans } from "@/hooks/useBeans";
+import { useFlavorTags } from "@/hooks/useFlavorTags";
 import { useDeleteRoastLog } from "@/hooks/useMutateRoastLog";
 import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
@@ -23,9 +25,17 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
   const { data: beans = [], isLoading: beansLoading } = useBeans();
   const { data: levels = [], isLoading: levelsLoading } = useRoastLevels();
   const { data: devices = [], isLoading: devicesLoading } = useRoastDevices();
+  const { data: flavorTags = [], isLoading: flavorTagsLoading } =
+    useFlavorTags();
   const { mutateAsync: deleteLog } = useDeleteRoastLog();
 
-  if (logLoading || beansLoading || levelsLoading || devicesLoading)
+  if (
+    logLoading ||
+    beansLoading ||
+    levelsLoading ||
+    devicesLoading ||
+    flavorTagsLoading
+  )
     return null;
   if (!log) return <p>ログが見つかりません</p>;
 
@@ -33,6 +43,8 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
   const level = levels.find((l) => l.id === log.roastLevelId);
   const device = devices.find((d) => d.id === log.roastDeviceId);
   const rate = calcWeightLossRate(log.weightBeforeG, log.weightAfterG);
+  const flavorTagMap = Object.fromEntries(flavorTags.map((t) => [t.id, t]));
+  const tasting = log.tasting;
 
   const handleDelete = async () => {
     await deleteLog(logId);
@@ -101,6 +113,67 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
         <div>
           <p className="text-sm text-muted-foreground mb-1">焙煎メモ</p>
           <p className="text-sm">{log.processNote}</p>
+        </div>
+      )}
+
+      {/* 総合評価 */}
+      {log.overallScore != null && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">総合評価</p>
+          <StarRating value={log.overallScore} size={18} />
+        </div>
+      )}
+
+      {/* テイスティング */}
+      {tasting && (
+        <div className="border-t pt-4 flex flex-col gap-3">
+          <p className="text-sm font-medium">テイスティング</p>
+
+          {tasting.flavorTags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {tasting.flavorTags.map((tagId) => {
+                const tag = flavorTagMap[tagId];
+                if (!tag) return null;
+                return (
+                  <span
+                    key={tagId}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: `${tag.color}1A`,
+                      color: tag.color,
+                      border: `0.5px solid ${tag.color}66`,
+                    }}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: tag.color }}
+                    />
+                    {tag.name}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
+          <dl className="flex flex-col gap-2">
+            {(
+              [
+                { key: "sweetness", label: "甘さ" },
+                { key: "acidity", label: "酸味" },
+                { key: "body", label: "コク" },
+                { key: "bitterness", label: "苦み" },
+                { key: "aftertaste", label: "後味" },
+                { key: "cleanliness", label: "クリーン" },
+              ] as const
+            ).map(({ key, label }) => (
+              <div key={key} className="flex items-center justify-between">
+                <dt className="text-sm text-muted-foreground">{label}</dt>
+                <dd>
+                  <StarRating value={tasting[key]} size={14} />
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       )}
     </div>
