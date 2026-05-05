@@ -1,6 +1,5 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { BeanForm } from "@/components/BeanForm";
-import { buttonVariants } from "@/components/ui/button";
 import { useCreateBean } from "@/hooks/useMutateBean";
 import type { CreateBeanInput } from "@/schemas/bean";
 
@@ -13,6 +12,12 @@ const emptyDefaults: CreateBeanInput = {
   importedAt: null,
   stockG: 0,
   note: "",
+  totalG: 0,
+  flavorTagIds: [],
+  process: "",
+  region: "",
+  altitude: "",
+  variety: "",
 };
 
 export function BeanCreatePage() {
@@ -20,24 +25,50 @@ export function BeanCreatePage() {
   const { mutateAsync } = useCreateBean();
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">生豆を追加</h1>
-        <Link to="/beans" className={buttonVariants({ variant: "outline" })}>
-          キャンセル
-        </Link>
-      </div>
-      <BeanForm
-        defaultValues={emptyDefaults}
-        submitLabel="登録"
-        onSubmit={async (input) => {
-          const bean = await mutateAsync(input);
-          await navigate({
-            to: "/beans/$beanId",
-            params: { beanId: bean.id },
-          });
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      <header
+        style={{
+          flexShrink: 0,
+          height: 52,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+          background: "var(--background)",
+          borderBottom: "0.5px solid var(--border)",
         }}
-      />
+      >
+        <div
+          style={{
+            flex: 1,
+            fontWeight: 500,
+            fontSize: 18,
+            color: "var(--foreground)",
+          }}
+        >
+          豆を追加
+        </div>
+      </header>
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px 16px 32px" }}>
+        <BeanForm
+          defaultValues={emptyDefaults}
+          submitLabel="登録"
+          onSubmit={async (input) => {
+            const bean = await mutateAsync(input);
+            await navigate({
+              to: "/beans/$beanId",
+              params: { beanId: bean.id },
+            });
+          }}
+          onCancel={() => navigate({ to: "/beans" })}
+        />
+      </div>
     </div>
   );
 }

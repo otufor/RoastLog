@@ -13,6 +13,12 @@ export function useCreateBean() {
         ...input,
         id: crypto.randomUUID(),
         bestLogId: null,
+        totalG: input.totalG ?? 0,
+        flavorTagIds: input.flavorTagIds ?? [],
+        process: input.process ?? "",
+        region: input.region ?? "",
+        altitude: input.altitude ?? "",
+        variety: input.variety ?? "",
       };
       await repo.save(bean);
       return bean;

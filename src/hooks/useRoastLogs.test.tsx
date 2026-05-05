@@ -70,6 +70,12 @@ describe("useRoastLogs", () => {
       stockG: 500,
       bestLogId: null,
       note: "",
+      totalG: 0,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
     });
 
     const qc = makeQc();
@@ -101,6 +107,12 @@ describe("useRoastLogs", () => {
       stockG: 500,
       bestLogId: null,
       note: "",
+      totalG: 0,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
     });
 
     const qc = makeQc();
@@ -130,6 +142,12 @@ describe("useRoastLogs", () => {
       stockG: 500,
       bestLogId: null,
       note: "",
+      totalG: 0,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
     });
 
     const qc = makeQc();
