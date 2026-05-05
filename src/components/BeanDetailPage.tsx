@@ -77,10 +77,13 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
   const beanLogs = logs
     .filter((l) => l.beanId === beanId)
     .sort((a, b) => b.roastDate.localeCompare(a.roastDate));
-  const bestLog = beanLogs.reduce<(typeof beanLogs)[0] | null>((best, log) => {
-    if (!best || (log.overallScore ?? 0) > (best.overallScore ?? 0)) return log;
-    return best;
-  }, null);
+  const bestLog = beanLogs
+    .filter((log) => log.overallScore != null)
+    .reduce<(typeof beanLogs)[0] | null>((best, log) => {
+      if (!best || (log.overallScore ?? 0) > (best.overallScore ?? 0))
+        return log;
+      return best;
+    }, null);
 
   const pct = stockPct(bean);
 

@@ -12,9 +12,9 @@ const FormSchema = z.object({
   shopName: z.string(),
   purchasedAt: z.string(),
   importedAt: z.string(),
-  stockG: z.number(),
+  stockG: z.number().nonnegative("在庫は 0 以上で入力してください"),
   note: z.string(),
-  totalG: z.number(),
+  totalG: z.number().nonnegative("購入量は 0 以上で入力してください"),
   flavorTagIds: z.array(z.string()),
   process: z.string(),
   region: z.string(),
@@ -217,13 +217,23 @@ export function BeanForm({
       {/* 精製方法 */}
       <form.Field name="process">
         {(field) => (
-          <div>
-            <FieldLabel htmlFor="bean-process">精製方法</FieldLabel>
+          <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+            <legend
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: "var(--muted-foreground)",
+                marginBottom: 6,
+              }}
+            >
+              精製方法
+            </legend>
             <div style={{ display: "flex", gap: 6 }}>
               {PROCESSES.map((p) => (
                 <button
                   key={p}
                   type="button"
+                  aria-pressed={field.state.value === p}
                   onClick={() => field.handleChange(p)}
                   style={{
                     flex: 1,
@@ -250,7 +260,7 @@ export function BeanForm({
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
         )}
       </form.Field>
 
@@ -338,20 +348,25 @@ export function BeanForm({
       {flavorTags.length > 0 && (
         <form.Field name="flavorTagIds">
           {(field) => (
-            <div>
-              <FieldLabel htmlFor="bean-flavor-tags">
-                フレーバーノート（任意）
-              </FieldLabel>
-              <div
-                id="bean-flavor-tags"
-                style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
+            <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+              <legend
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "var(--muted-foreground)",
+                  marginBottom: 6,
+                }}
               >
+                フレーバーノート（任意）
+              </legend>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {flavorTags.map((tag) => {
                   const selected = field.state.value.includes(tag.id);
                   return (
                     <button
                       key={tag.id}
                       type="button"
+                      aria-pressed={selected}
                       onClick={() => {
                         const next = selected
                           ? field.state.value.filter((id) => id !== tag.id)
@@ -391,7 +406,7 @@ export function BeanForm({
                   );
                 })}
               </div>
-            </div>
+            </fieldset>
           )}
         </form.Field>
       )}

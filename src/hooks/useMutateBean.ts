@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/db";
 import { BeanRepository } from "@/repositories/beanRepository";
 import type { Bean, CreateBeanInput } from "@/schemas/bean";
-import { BeanSchema } from "@/schemas/bean";
 
 const repo = new BeanRepository(db.beans);
 
@@ -10,11 +9,17 @@ export function useCreateBean() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateBeanInput): Promise<Bean> => {
-      const bean = BeanSchema.parse({
+      const bean: Bean = {
         ...input,
         id: crypto.randomUUID(),
         bestLogId: null,
-      });
+        totalG: input.totalG ?? 0,
+        flavorTagIds: input.flavorTagIds ?? [],
+        process: input.process ?? "",
+        region: input.region ?? "",
+        altitude: input.altitude ?? "",
+        variety: input.variety ?? "",
+      };
       await repo.save(bean);
       return bean;
     },

@@ -254,6 +254,7 @@ export function BeanListPage() {
             <input
               ref={inputRef}
               type="text"
+              aria-label="豆を検索"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="豆を検索…"
