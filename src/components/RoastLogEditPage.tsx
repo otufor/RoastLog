@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { RoastLogForm } from "@/components/RoastLogForm";
 import { useBeans } from "@/hooks/useBeans";
+import { useFlavorTags } from "@/hooks/useFlavorTags";
 import { useUpdateRoastLog } from "@/hooks/useMutateRoastLog";
 import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
@@ -17,9 +18,17 @@ export function RoastLogEditPage({ logId }: RoastLogEditPageProps) {
   const { data: beans = [], isLoading: beansLoading } = useBeans();
   const { data: levels = [], isLoading: levelsLoading } = useRoastLevels();
   const { data: devices = [], isLoading: devicesLoading } = useRoastDevices();
+  const { data: flavorTags = [], isLoading: flavorTagsLoading } =
+    useFlavorTags();
   const { mutateAsync: updateLog } = useUpdateRoastLog();
 
-  if (logLoading || beansLoading || levelsLoading || devicesLoading)
+  if (
+    logLoading ||
+    beansLoading ||
+    levelsLoading ||
+    devicesLoading ||
+    flavorTagsLoading
+  )
     return null;
   if (!log) return <p>ログが見つかりません</p>;
 
@@ -51,6 +60,7 @@ export function RoastLogEditPage({ logId }: RoastLogEditPageProps) {
         beans={beans}
         roastLevels={levels}
         roastDevices={devices}
+        flavorTags={flavorTags}
         submitLabel="保存"
         onSubmit={async (input: CreateRoastLogInput) => {
           await updateLog({ ...log, ...input });

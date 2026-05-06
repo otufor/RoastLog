@@ -107,9 +107,9 @@ describe("RoastLogCreatePage", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "登録" }));
 
-    await waitFor(() =>
-      expect(router.state.location.pathname).toMatch(/^\/logs\/.+$/),
-    );
-    expect(screen.getByText("詳細ページ")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(router.state.location.pathname).toMatch(/^\/logs\/.+$/);
+      expect(screen.getByText("詳細ページ")).toBeInTheDocument();
+    });
   });
 });

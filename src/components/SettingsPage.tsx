@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { FlavorTagSettings } from "@/components/FlavorTagSettings";
+import { LocationSettings } from "@/components/LocationSettings";
 import { RoastDeviceSettings } from "@/components/RoastDeviceSettings";
 import { RoastLevelSettings } from "@/components/RoastLevelSettings";
 
@@ -15,6 +16,7 @@ export function SettingsPage() {
       <RoastLevelSettings />
       <FlavorTagSettings />
       <RoastDeviceSettings />
+      <LocationSettings />
     </div>
   );
 }

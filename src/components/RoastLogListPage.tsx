@@ -6,6 +6,7 @@ import { calcWeightLossRate } from "@/domain/roastLog";
 import { useBeans } from "@/hooks/useBeans";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
 import { useRoastLogs } from "@/hooks/useRoastLogs";
+import { weatherEmoji } from "@/lib/weatherEmoji";
 
 const FILTERS = [
   { id: "all", label: "すべて" },
@@ -261,9 +262,19 @@ export function RoastLogListPage() {
                     fontFamily: "ui-monospace, monospace",
                     fontSize: 11,
                     color: "var(--muted-foreground)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
-                  {log.roastDate} · 減少率 {rate.toFixed(1)}%
+                  <span>
+                    {log.roastDate} · 減少率 {rate.toFixed(1)}%
+                  </span>
+                  {log.weatherCode != null && weatherEmoji(log.weatherCode) && (
+                    <span role="img" aria-label="天気" style={{ fontSize: 14 }}>
+                      {weatherEmoji(log.weatherCode)}
+                    </span>
+                  )}
                 </div>
 
                 <div
