@@ -22,35 +22,54 @@ import type { CreateRoastLogInput } from "@/schemas/roastLog";
 
 const TastingAxisScore = z.number().int().min(1).max(5).nullable();
 
-const FormSchema = z.object({
-  beanId: z.string().min(1, "豆を選択してください"),
-  roastDate: z.string().min(1, "焙煎日を入力してください"),
-  roastLevelId: z.string().min(1, "焙煎度を選択してください"),
-  roastDeviceId: z.string().nullable(),
-  roastDurationSec: z.number().int().nonnegative(),
-  firstCrackSec: z.number().int().nonnegative().nullable(),
-  secondCrackSec: z.number().int().nonnegative().nullable(),
-  weightBeforeG: z
-    .number()
-    .positive("焙煎前重量は0より大きい値を入力してください"),
-  weightAfterG: z
-    .number()
-    .positive("焙煎後重量は0より大きい値を入力してください"),
-  indoorTempC: z.number().nullable(),
-  outdoorTempC: z.number().nullable(),
-  outdoorHumidity: z.number().min(0).max(100).nullable(),
-  weatherCode: z.number().int().nullable(),
-  tempSource: z.enum(["auto", "manual"]),
-  processNote: z.string(),
-  flavorTagIds: z.array(z.string()),
-  sweetness: TastingAxisScore,
-  acidity: TastingAxisScore,
-  body: TastingAxisScore,
-  bitterness: TastingAxisScore,
-  aftertaste: TastingAxisScore,
-  cleanliness: TastingAxisScore,
-  overallScore: TastingAxisScore,
-});
+const FormSchema = z
+  .object({
+    beanId: z.string().min(1, "豆を選択してください"),
+    roastDate: z.string().min(1, "焙煎日を入力してください"),
+    roastLevelId: z.string().min(1, "焙煎度を選択してください"),
+    roastDeviceId: z.string().nullable(),
+    roastDurationSec: z.number().int().nonnegative(),
+    firstCrackSec: z.number().int().nonnegative().nullable(),
+    secondCrackSec: z.number().int().nonnegative().nullable(),
+    weightBeforeG: z
+      .number()
+      .positive("焙煎前重量は0より大きい値を入力してください"),
+    weightAfterG: z
+      .number()
+      .positive("焙煎後重量は0より大きい値を入力してください"),
+    indoorTempC: z.number().nullable(),
+    outdoorTempC: z.number().nullable(),
+    outdoorHumidity: z.number().min(0).max(100).nullable(),
+    weatherCode: z.number().int().nullable(),
+    tempSource: z.enum(["auto", "manual"]),
+    processNote: z.string(),
+    flavorTagIds: z.array(z.string()),
+    sweetness: TastingAxisScore,
+    acidity: TastingAxisScore,
+    body: TastingAxisScore,
+    bitterness: TastingAxisScore,
+    aftertaste: TastingAxisScore,
+    cleanliness: TastingAxisScore,
+    overallScore: TastingAxisScore,
+  })
+  .superRefine((data, ctx) => {
+    const axes = [
+      data.sweetness,
+      data.acidity,
+      data.body,
+      data.bitterness,
+      data.aftertaste,
+      data.cleanliness,
+    ];
+    const filled = axes.filter((v) => v !== null).length;
+    if (filled > 0 && filled < 6) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "テイスティングを保存するには6軸すべての評価を入力してください",
+      });
+    }
+  });
 
 interface RoastLogFormProps {
   defaultValues: CreateRoastLogInput;
@@ -134,6 +153,7 @@ export function RoastLogForm({
   const weightLossRate = useStore(form.store, (state) =>
     calcWeightLossRate(state.values.weightBeforeG, state.values.weightAfterG),
   );
+  const formErrors = useStore(form.store, (state) => state.errors);
 
   return (
     <form
@@ -590,6 +610,19 @@ export function RoastLogForm({
             )}
           </form.Field>
         </div>
+
+        {formErrors.length > 0 &&
+          formErrors.map((err) =>
+            err ? (
+              <span
+                key={String(err)}
+                role="alert"
+                className="text-sm text-destructive"
+              >
+                {String(err)}
+              </span>
+            ) : null,
+          )}
 
         {/* 総合評価 */}
         <div className="border-t pt-3">
