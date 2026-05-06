@@ -17,3 +17,20 @@ export function useRoastLog(id: string) {
     queryFn: async () => (await repo.findById(id)) ?? null,
   });
 }
+
+export function usePreviousRoastLog(logId: string, beanId: string | null) {
+  return useQuery({
+    queryKey: ["roastLogs", "byBean", beanId],
+    queryFn: () => repo.findByBeanId(beanId ?? ""),
+    enabled: beanId !== null,
+    select: (logs) => {
+      const sorted = [...logs].sort(
+        (a, b) =>
+          b.roastDate.localeCompare(a.roastDate) || b.id.localeCompare(a.id),
+      );
+      const idx = sorted.findIndex((l) => l.id === logId);
+      if (idx === -1 || idx === sorted.length - 1) return null;
+      return sorted[idx + 1];
+    },
+  });
+}

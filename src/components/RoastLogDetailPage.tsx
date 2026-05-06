@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { DiffSummary } from "@/components/DiffSummary";
 import { StarRating } from "@/components/StarRating";
 import { calcWeightLossRate } from "@/domain/roastLog";
 import { useBeans } from "@/hooks/useBeans";
@@ -6,7 +7,7 @@ import { useFlavorTags } from "@/hooks/useFlavorTags";
 import { useDeleteRoastLog } from "@/hooks/useMutateRoastLog";
 import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
-import { useRoastLog } from "@/hooks/useRoastLogs";
+import { usePreviousRoastLog, useRoastLog } from "@/hooks/useRoastLogs";
 import { weatherEmoji } from "@/lib/weatherEmoji";
 
 function formatSec(sec: number | null): string {
@@ -28,6 +29,8 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
   const { data: devices = [], isLoading: devicesLoading } = useRoastDevices();
   const { data: flavorTags = [], isLoading: flavorTagsLoading } =
     useFlavorTags();
+  const { data: previousLog, isLoading: previousLogLoading } =
+    usePreviousRoastLog(logId, log?.beanId ?? null);
   const { mutateAsync: deleteLog } = useDeleteRoastLog();
 
   if (
@@ -35,7 +38,8 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
     beansLoading ||
     levelsLoading ||
     devicesLoading ||
-    flavorTagsLoading
+    flavorTagsLoading ||
+    previousLogLoading
   )
     return null;
   if (!log) return <p>ログが見つかりません</p>;
@@ -137,6 +141,8 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
           <StarRating value={log.overallScore} size={18} />
         </div>
       )}
+
+      {previousLog && <DiffSummary current={log} previous={previousLog} />}
 
       {/* テイスティング */}
       {tasting && (

@@ -218,6 +218,41 @@ describe("RoastLogDetailPage", () => {
     expect(screen.queryByText("テイスティング")).not.toBeInTheDocument();
   });
 
+  it("同じ Bean の直前ログが存在する場合に DiffSummary パネルを表示する", async () => {
+    const previousLog: RoastLog = {
+      ...LOG,
+      id: "550e8400-e29b-41d4-a716-446655440098",
+      roastDate: "2025-04-10",
+      firstCrackSec: 280,
+    };
+    await db.beans.put(BEAN);
+    await db.roastLevels.put(LEVEL);
+    await db.roastDevices.put(DEVICE);
+    await db.roastLogs.put(previousLog);
+    await db.roastLogs.put(LOG);
+
+    renderDetailPage(LOG.id);
+
+    await waitFor(() =>
+      expect(screen.getByText("前回ログとの差分")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("前回焙煎日: 2025-04-10")).toBeInTheDocument();
+  });
+
+  it("Bean の最初のログ（直前ログなし）では DiffSummary パネルを表示しない", async () => {
+    await db.beans.put(BEAN);
+    await db.roastLevels.put(LEVEL);
+    await db.roastDevices.put(DEVICE);
+    await db.roastLogs.put(LOG);
+
+    renderDetailPage(LOG.id);
+
+    await waitFor(() =>
+      expect(screen.getByText("エチオピア イルガチェフェ")).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("前回ログとの差分")).not.toBeInTheDocument();
+  });
+
   it("「削除」ボタンでログを削除し一覧へ遷移する", async () => {
     await db.beans.put(BEAN);
     await db.roastLevels.put(LEVEL);
