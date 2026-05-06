@@ -7,7 +7,7 @@ import {
   useCreateRoastLog,
   useDeleteRoastLog,
 } from "@/hooks/useMutateRoastLog";
-import { useRoastLogs } from "@/hooks/useRoastLogs";
+import { usePreviousRoastLog, useRoastLogs } from "@/hooks/useRoastLogs";
 
 function makeWrapper(qc: QueryClient) {
   return function Wrapper({ children }: { children: ReactNode }) {
@@ -171,5 +171,88 @@ describe("useRoastLogs", () => {
       del.current.mutate(logId);
     });
     await waitFor(() => expect(logs.current.data).toHaveLength(0));
+  });
+});
+
+const BEAN_ID = "550e8400-e29b-41d4-a716-446655440001";
+
+const LOG_A: Parameters<typeof db.roastLogs.put>[0] = {
+  id: "550e8400-e29b-41d4-a716-446655440010",
+  beanId: BEAN_ID,
+  roastDate: "2025-04-20",
+  roastLevelId: "medium",
+  roastDeviceId: null,
+  roastDurationSec: 480,
+  firstCrackSec: 300,
+  secondCrackSec: null,
+  weightBeforeG: 250,
+  weightAfterG: 210,
+  outdoorTempC: 18,
+  outdoorHumidity: 60,
+  indoorTempC: 22,
+  tempSource: "auto",
+  weatherCode: 0,
+  tasting: null,
+  overallScore: 4,
+  processNote: "",
+};
+
+const LOG_B: Parameters<typeof db.roastLogs.put>[0] = {
+  ...LOG_A,
+  id: "550e8400-e29b-41d4-a716-446655440011",
+  roastDate: "2025-04-10",
+};
+
+const LOG_C: Parameters<typeof db.roastLogs.put>[0] = {
+  ...LOG_A,
+  id: "550e8400-e29b-41d4-a716-446655440012",
+  roastDate: "2025-03-01",
+};
+
+describe("usePreviousRoastLog", () => {
+  beforeEach(async () => {
+    await Promise.all([
+      db.roastLevels.clear(),
+      db.flavorTags.clear(),
+      db.roastDevices.clear(),
+      db.beans.clear(),
+      db.roastLogs.clear(),
+    ]);
+  });
+
+  it("直前のログ（roastDate 降順で1件前）を返す", async () => {
+    await db.roastLogs.bulkPut([LOG_A, LOG_B, LOG_C]);
+
+    const qc = makeQc();
+    const { result } = renderHook(
+      () => usePreviousRoastLog(LOG_A.id, BEAN_ID),
+      { wrapper: makeWrapper(qc) },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.data?.id).toBe(LOG_B.id);
+  });
+
+  it("最初のログ（直前ログなし）では null を返す", async () => {
+    await db.roastLogs.bulkPut([LOG_A, LOG_B, LOG_C]);
+
+    const qc = makeQc();
+    const { result } = renderHook(
+      () => usePreviousRoastLog(LOG_C.id, BEAN_ID),
+      { wrapper: makeWrapper(qc) },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.data).toBeNull();
+  });
+
+  it("beanId が null のとき undefined を返しクエリを実行しない", async () => {
+    const qc = makeQc();
+    const { result } = renderHook(() => usePreviousRoastLog(LOG_A.id, null), {
+      wrapper: makeWrapper(qc),
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.data).toBeUndefined();
   });
 });
