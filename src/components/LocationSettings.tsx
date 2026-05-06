@@ -36,8 +36,16 @@ export function LocationSettings() {
         locationLat: position.coords.latitude,
         locationLon: position.coords.longitude,
       });
-    } catch {
-      setError("位置情報を取得できませんでした");
+    } catch (err) {
+      console.warn("Failed to fetch location:", err);
+      if (
+        err instanceof GeolocationPositionError &&
+        err.code === err.PERMISSION_DENIED
+      ) {
+        setError("位置情報の利用が許可されていません");
+      } else {
+        setError("位置情報を取得できませんでした");
+      }
     } finally {
       setBusy(false);
     }
