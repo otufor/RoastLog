@@ -7,6 +7,7 @@ import { useDeleteRoastLog } from "@/hooks/useMutateRoastLog";
 import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
 import { useRoastLog } from "@/hooks/useRoastLogs";
+import { weatherEmoji } from "@/lib/weatherEmoji";
 
 function formatSec(sec: number | null): string {
   if (sec === null) return "—";
@@ -107,6 +108,19 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
 
         <dt className="text-muted-foreground">室内温度</dt>
         <dd>{log.indoorTempC != null ? `${log.indoorTempC}℃` : "—"}</dd>
+
+        <dt className="text-muted-foreground">天気</dt>
+        <dd>
+          <span role="img" aria-label="天気">
+            {weatherEmoji(log.weatherCode) || "—"}
+          </span>
+        </dd>
+
+        <dt className="text-muted-foreground">外気温</dt>
+        <dd>{log.outdoorTempC != null ? `${log.outdoorTempC}℃` : "—"}</dd>
+
+        <dt className="text-muted-foreground">外気湿度</dt>
+        <dd>{log.outdoorHumidity != null ? `${log.outdoorHumidity}%` : "—"}</dd>
       </dl>
 
       {log.processNote && (

@@ -1,10 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { RoastLogForm } from "@/components/RoastLogForm";
+import { useAppSettings } from "@/hooks/useAppSettings";
 import { useBeans } from "@/hooks/useBeans";
 import { useFlavorTags } from "@/hooks/useFlavorTags";
 import { useCreateRoastLog } from "@/hooks/useMutateRoastLog";
 import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
+import { useWeather } from "@/hooks/useWeather";
 import type { CreateRoastLogInput } from "@/schemas/roastLog";
 
 const EMPTY_DEFAULTS: CreateRoastLogInput = {
@@ -35,8 +37,20 @@ export function RoastLogCreatePage() {
   const { data: devices = [], isLoading: devicesLoading } = useRoastDevices();
   const { data: flavorTags = [], isLoading: flavorTagsLoading } =
     useFlavorTags();
+  const { data: appSettings, isLoading: settingsLoading } = useAppSettings();
+  const weather = useWeather(
+    appSettings?.locationLat ?? null,
+    appSettings?.locationLon ?? null,
+  );
 
-  if (beansLoading || levelsLoading || devicesLoading || flavorTagsLoading)
+  if (
+    beansLoading ||
+    levelsLoading ||
+    devicesLoading ||
+    flavorTagsLoading ||
+    settingsLoading ||
+    weather.isLoading
+  )
     return null;
 
   const today = new Date();
@@ -47,6 +61,10 @@ export function RoastLogCreatePage() {
     beanId: beans[0]?.id ?? "",
     roastLevelId: levels[0]?.id ?? "",
     roastDeviceId: devices[0]?.id ?? null,
+    outdoorTempC: weather.data?.outdoorTempC ?? null,
+    outdoorHumidity: weather.data?.outdoorHumidity ?? null,
+    weatherCode: weather.data?.weatherCode ?? null,
+    tempSource: weather.data ? "auto" : "manual",
   };
 
   return (

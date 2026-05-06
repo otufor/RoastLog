@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { calcWeightLossRate } from "@/domain/roastLog";
+import { weatherEmoji } from "@/lib/weatherEmoji";
 import type { Bean } from "@/schemas/bean";
 import type { FlavorTag, RoastDevice, RoastLevel } from "@/schemas/masterData";
 import type { CreateRoastLogInput } from "@/schemas/roastLog";
@@ -36,6 +37,10 @@ const FormSchema = z.object({
     .number()
     .positive("焙煎後重量は0より大きい値を入力してください"),
   indoorTempC: z.number().nullable(),
+  outdoorTempC: z.number().nullable(),
+  outdoorHumidity: z.number().min(0).max(100).nullable(),
+  weatherCode: z.number().int().nullable(),
+  tempSource: z.enum(["auto", "manual"]),
   processNote: z.string(),
   flavorTagIds: z.array(z.string()),
   sweetness: TastingAxisScore,
@@ -78,6 +83,10 @@ export function RoastLogForm({
       weightBeforeG: defaultValues.weightBeforeG,
       weightAfterG: defaultValues.weightAfterG,
       indoorTempC: defaultValues.indoorTempC,
+      outdoorTempC: defaultValues.outdoorTempC,
+      outdoorHumidity: defaultValues.outdoorHumidity,
+      weatherCode: defaultValues.weatherCode,
+      tempSource: defaultValues.tempSource,
       processNote: defaultValues.processNote,
       flavorTagIds: defaultValues.tasting?.flavorTags ?? [],
       sweetness: defaultValues.tasting?.sweetness ?? null,
@@ -359,6 +368,64 @@ export function RoastLogForm({
           <span className="font-mono text-sm font-medium">
             {weightLossRate.toFixed(1)}%
           </span>
+        </div>
+      </div>
+
+      {/* 天気 */}
+      <div className="flex flex-col gap-2 rounded-md border p-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">天気</span>
+          <form.Subscribe selector={(state) => state.values.weatherCode}>
+            {(code) => {
+              const emoji = weatherEmoji(code);
+              return (
+                <span role="img" aria-label="天気" className="text-xl">
+                  {emoji || "—"}
+                </span>
+              );
+            }}
+          </form.Subscribe>
+        </div>
+        <div className="flex gap-3">
+          <form.Field name="outdoorTempC">
+            {(field) => (
+              <div className="flex flex-1 flex-col gap-1">
+                <Label htmlFor="log-outdoor-temp">外気温 (℃)</Label>
+                <Input
+                  id="log-outdoor-temp"
+                  type="number"
+                  step={0.1}
+                  value={field.state.value ?? ""}
+                  onChange={(e) => {
+                    const next =
+                      e.target.value === "" ? null : Number(e.target.value);
+                    field.handleChange(next);
+                    form.setFieldValue("tempSource", "manual");
+                  }}
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="outdoorHumidity">
+            {(field) => (
+              <div className="flex flex-1 flex-col gap-1">
+                <Label htmlFor="log-outdoor-humidity">外気湿度 (%)</Label>
+                <Input
+                  id="log-outdoor-humidity"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={field.state.value ?? ""}
+                  onChange={(e) =>
+                    field.handleChange(
+                      e.target.value === "" ? null : Number(e.target.value),
+                    )
+                  }
+                />
+              </div>
+            )}
+          </form.Field>
         </div>
       </div>
 
