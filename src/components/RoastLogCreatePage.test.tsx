@@ -88,6 +88,98 @@ describe("RoastLogCreatePage", () => {
     );
   });
 
+  it("在庫不足の場合、確認ダイアログを表示する", async () => {
+    await db.beans.put({ ...BEAN, stockG: 100 });
+    await db.roastLevels.put(LEVEL);
+
+    renderCreatePage();
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("焙煎前重量 (g)")).toBeInTheDocument(),
+    );
+
+    const beforeInput = screen.getByLabelText("焙煎前重量 (g)");
+    const afterInput = screen.getByLabelText("焙煎後重量 (g)");
+    await userEvent.clear(beforeInput);
+    await userEvent.type(beforeInput, "200");
+    await userEvent.clear(afterInput);
+    await userEvent.type(afterInput, "170");
+
+    await userEvent.click(screen.getByRole("button", { name: "登録" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("dialog", { name: "在庫不足の確認" }),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  it("在庫不足ダイアログでキャンセルすると保存しない", async () => {
+    await db.beans.put({ ...BEAN, stockG: 100 });
+    await db.roastLevels.put(LEVEL);
+
+    const { router } = renderCreatePage();
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("焙煎前重量 (g)")).toBeInTheDocument(),
+    );
+
+    const beforeInput = screen.getByLabelText("焙煎前重量 (g)");
+    const afterInput = screen.getByLabelText("焙煎後重量 (g)");
+    await userEvent.clear(beforeInput);
+    await userEvent.type(beforeInput, "200");
+    await userEvent.clear(afterInput);
+    await userEvent.type(afterInput, "170");
+
+    await userEvent.click(screen.getByRole("button", { name: "登録" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("dialog", { name: "在庫不足の確認" }),
+      ).toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "キャンセル" }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "在庫不足の確認" }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(router.state.location.pathname).toBe("/logs/new");
+  });
+
+  it("在庫不足ダイアログで「それでも保存」すると保存して詳細ページへ遷移する", async () => {
+    await db.beans.put({ ...BEAN, stockG: 100 });
+    await db.roastLevels.put(LEVEL);
+
+    const { router } = renderCreatePage();
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("焙煎前重量 (g)")).toBeInTheDocument(),
+    );
+
+    const beforeInput = screen.getByLabelText("焙煎前重量 (g)");
+    const afterInput = screen.getByLabelText("焙煎後重量 (g)");
+    await userEvent.clear(beforeInput);
+    await userEvent.type(beforeInput, "200");
+    await userEvent.clear(afterInput);
+    await userEvent.type(afterInput, "170");
+
+    await userEvent.click(screen.getByRole("button", { name: "登録" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("dialog", { name: "在庫不足の確認" }),
+      ).toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "それでも保存" }));
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toMatch(/^\/logs\/.+$/);
+      expect(screen.getByText("詳細ページ")).toBeInTheDocument();
+    });
+  });
+
   it("保存後に詳細ページへ遷移する", async () => {
     await db.beans.put(BEAN);
     await db.roastLevels.put(LEVEL);

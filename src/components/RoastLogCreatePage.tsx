@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { RoastLogForm } from "@/components/RoastLogForm";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useBeans } from "@/hooks/useBeans";
@@ -32,6 +33,9 @@ const EMPTY_DEFAULTS: CreateRoastLogInput = {
 export function RoastLogCreatePage() {
   const navigate = useNavigate();
   const { mutateAsync } = useCreateRoastLog();
+  const [pendingInput, setPendingInput] = useState<CreateRoastLogInput | null>(
+    null,
+  );
   const { data: beans = [], isLoading: beansLoading } = useBeans();
   const { data: levels = [], isLoading: levelsLoading } = useRoastLevels();
   const { data: devices = [], isLoading: devicesLoading } = useRoastDevices();
@@ -67,6 +71,20 @@ export function RoastLogCreatePage() {
     tempSource: weather.data ? "auto" : "manual",
   };
 
+  async function handleSubmit(input: CreateRoastLogInput) {
+    const bean = beans.find((b) => b.id === input.beanId);
+    if (bean && bean.stockG < input.weightBeforeG) {
+      setPendingInput(input);
+      return;
+    }
+    await save(input);
+  }
+
+  async function save(input: CreateRoastLogInput) {
+    const log = await mutateAsync(input);
+    await navigate({ to: "/logs/$logId", params: { logId: log.id } });
+  }
+
   return (
     <div className="p-6">
       <h1 className="mb-4 text-2xl font-bold">新しい焙煎を記録</h1>
@@ -77,11 +95,46 @@ export function RoastLogCreatePage() {
         roastDevices={devices}
         flavorTags={flavorTags}
         submitLabel="登録"
-        onSubmit={async (input: CreateRoastLogInput) => {
-          const log = await mutateAsync(input);
-          await navigate({ to: "/logs/$logId", params: { logId: log.id } });
-        }}
+        onSubmit={handleSubmit}
       />
+      {pendingInput && (
+        <div
+          role="dialog"
+          aria-labelledby="stock-warning-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+        >
+          <div className="mx-4 max-w-sm rounded-lg bg-white p-6 shadow-xl">
+            <h3 id="stock-warning-title" className="mb-3 text-lg font-semibold">
+              在庫不足の確認
+            </h3>
+            <p className="mb-6 text-sm text-gray-600">
+              在庫（
+              {beans.find((b) => b.id === pendingInput.beanId)?.stockG ?? 0}
+              g）より多い{pendingInput.weightBeforeG}
+              gを使用します。このまま保存しますか？
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                className="rounded px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                onClick={() => setPendingInput(null)}
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                onClick={async () => {
+                  setPendingInput(null);
+                  await save(pendingInput);
+                }}
+              >
+                それでも保存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
