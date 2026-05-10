@@ -2,37 +2,78 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { RoastBadge } from "@/components/RoastBadge";
 import { StarRating } from "@/components/StarRating";
-import { calcWeightLossRate } from "@/domain/roastLog";
+import {
+  calcWeightLossRate,
+  filterAndSortLogs,
+  type LogFilter,
+  type LogSortDir,
+  type LogSortKey,
+} from "@/domain/roastLog";
 import { useBeans } from "@/hooks/useBeans";
+import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
 import { useRoastLogs } from "@/hooks/useRoastLogs";
 import { weatherEmoji } from "@/lib/weatherEmoji";
 
-const FILTERS = [
+const FILTER_CHIPS = [
   { id: "all", label: "すべて" },
   { id: "bean", label: "豆" },
-  { id: "roast", label: "焙煎度" },
+  { id: "roastLevel", label: "焙煎度" },
+  { id: "device", label: "デバイス" },
   { id: "score", label: "スコア" },
   { id: "date", label: "日付" },
 ] as const;
 
+type FilterChipId = (typeof FILTER_CHIPS)[number]["id"];
+
+const SORT_OPTIONS: { value: `${LogSortKey}-${LogSortDir}`; label: string }[] =
+  [
+    { value: "roastDate-desc", label: "日付（新しい順）" },
+    { value: "roastDate-asc", label: "日付（古い順）" },
+    { value: "overallScore-desc", label: "スコア（高い順）" },
+    { value: "overallScore-asc", label: "スコア（低い順）" },
+    { value: "weightLossRate-desc", label: "減少率（高い順）" },
+    { value: "weightLossRate-asc", label: "減少率（低い順）" },
+  ];
+
 export function RoastLogListPage() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<string>("all");
+  const [activeChip, setActiveChip] = useState<FilterChipId>("all");
+  const [filter, setFilter] = useState<LogFilter>({});
+  const [sortValue, setSortValue] =
+    useState<`${LogSortKey}-${LogSortDir}`>("roastDate-desc");
+
   const { data: logs = [], isLoading: logsLoading } = useRoastLogs();
   const { data: beans = [], isLoading: beansLoading } = useBeans();
   const { data: levels = [], isLoading: levelsLoading } = useRoastLevels();
+  const { data: devices = [], isLoading: devicesLoading } = useRoastDevices();
+
+  if (logsLoading || beansLoading || levelsLoading || devicesLoading)
+    return null;
 
   const beanMap = Object.fromEntries(beans.map((b) => [b.id, b]));
   const levelMap = Object.fromEntries(levels.map((l) => [l.id, l]));
   const bestLogIds = new Set(beans.map((b) => b.bestLogId).filter(Boolean));
 
-  // TODO: filter chips (bean/roast/score/date) are UI stubs; apply filter logic when implemented
-  const sorted = [...logs].sort((a, b) =>
-    b.roastDate.localeCompare(a.roastDate),
-  );
+  const [sortKey, sortDir] = sortValue.split("-") as [LogSortKey, LogSortDir];
+  const displayed = filterAndSortLogs(logs, filter, sortKey, sortDir);
 
-  if (logsLoading || beansLoading || levelsLoading) return null;
+  function handleChipClick(id: FilterChipId) {
+    if (id === "all") {
+      setActiveChip("all");
+      setFilter({});
+      return;
+    }
+    if (activeChip === id) {
+      setActiveChip("all");
+    } else {
+      setActiveChip(id);
+    }
+  }
+
+  function handleSortChange(val: string) {
+    setSortValue(val as `${LogSortKey}-${LogSortDir}`);
+  }
 
   return (
     <div
@@ -69,36 +110,27 @@ export function RoastLogListPage() {
         >
           焙煎ログ
         </div>
-        <button
-          type="button"
-          aria-label="検索"
+        <select
+          aria-label="並び順"
+          value={sortValue}
+          onChange={(e) => handleSortChange(e.target.value)}
           style={{
-            width: 44,
-            height: 44,
-            background: "transparent",
-            border: 0,
+            height: 32,
+            padding: "0 8px",
+            border: "0.5px solid var(--border)",
+            borderRadius: 6,
+            background: "var(--card)",
             color: "var(--foreground)",
+            fontSize: 12,
             cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
           }}
         >
-          <svg
-            aria-hidden="true"
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.3-4.3" />
-          </svg>
-        </button>
+          {SORT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
       </header>
 
       {/* Filter chips */}
@@ -109,18 +141,19 @@ export function RoastLogListPage() {
           display: "flex",
           gap: 6,
           overflowX: "auto",
-          borderBottom: "0.5px solid var(--border)",
+          borderBottom:
+            activeChip === "all" ? "0.5px solid var(--border)" : "none",
           scrollbarWidth: "none",
         }}
       >
-        {FILTERS.map((f) => {
-          const active = filter === f.id;
+        {FILTER_CHIPS.map((f) => {
+          const active = activeChip === f.id;
           return (
             <button
               type="button"
               key={f.id}
               aria-pressed={active}
-              onClick={() => setFilter(f.id)}
+              onClick={() => handleChipClick(f.id)}
               style={{
                 flexShrink: 0,
                 height: 32,
@@ -163,6 +196,168 @@ export function RoastLogListPage() {
         })}
       </div>
 
+      {/* Filter panel */}
+      {activeChip !== "all" && (
+        <div
+          style={{
+            flexShrink: 0,
+            padding: "8px 16px 12px",
+            borderBottom: "0.5px solid var(--border)",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+            alignItems: "center",
+          }}
+        >
+          {activeChip === "bean" && (
+            <select
+              aria-label="豆で絞り込み"
+              value={filter.beanId ?? ""}
+              onChange={(e) =>
+                setFilter((f) => ({
+                  ...f,
+                  beanId: e.target.value || undefined,
+                }))
+              }
+              style={selectStyle}
+            >
+              <option value="">すべての豆</option>
+              {beans.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {activeChip === "roastLevel" && (
+            <select
+              aria-label="焙煎度で絞り込み"
+              value={filter.roastLevelId ?? ""}
+              onChange={(e) =>
+                setFilter((f) => ({
+                  ...f,
+                  roastLevelId: e.target.value || undefined,
+                }))
+              }
+              style={selectStyle}
+            >
+              <option value="">すべての焙煎度</option>
+              {levels.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {activeChip === "device" && (
+            <select
+              aria-label="デバイスで絞り込み"
+              value={filter.roastDeviceId ?? ""}
+              onChange={(e) =>
+                setFilter((f) => ({
+                  ...f,
+                  roastDeviceId: e.target.value || undefined,
+                }))
+              }
+              style={selectStyle}
+            >
+              <option value="">すべてのデバイス</option>
+              {devices.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {activeChip === "score" && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <label style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+                最低
+                <input
+                  type="number"
+                  aria-label="最低スコア"
+                  min={1}
+                  max={5}
+                  value={filter.scoreMin ?? ""}
+                  onChange={(e) =>
+                    setFilter((f) => ({
+                      ...f,
+                      scoreMin: e.target.value
+                        ? Number(e.target.value)
+                        : undefined,
+                    }))
+                  }
+                  style={{ ...inputStyle, width: 56, marginLeft: 6 }}
+                />
+              </label>
+              <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+                〜
+              </span>
+              <label style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+                最高
+                <input
+                  type="number"
+                  aria-label="最高スコア"
+                  min={1}
+                  max={5}
+                  value={filter.scoreMax ?? ""}
+                  onChange={(e) =>
+                    setFilter((f) => ({
+                      ...f,
+                      scoreMax: e.target.value
+                        ? Number(e.target.value)
+                        : undefined,
+                    }))
+                  }
+                  style={{ ...inputStyle, width: 56, marginLeft: 6 }}
+                />
+              </label>
+            </div>
+          )}
+
+          {activeChip === "date" && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <label style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+                から
+                <input
+                  type="date"
+                  aria-label="開始日"
+                  value={filter.dateFrom ?? ""}
+                  onChange={(e) =>
+                    setFilter((f) => ({
+                      ...f,
+                      dateFrom: e.target.value || undefined,
+                    }))
+                  }
+                  style={{ ...inputStyle, marginLeft: 6 }}
+                />
+              </label>
+              <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+                〜
+              </span>
+              <label style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+                まで
+                <input
+                  type="date"
+                  aria-label="終了日"
+                  value={filter.dateTo ?? ""}
+                  onChange={(e) =>
+                    setFilter((f) => ({
+                      ...f,
+                      dateTo: e.target.value || undefined,
+                    }))
+                  }
+                  style={{ ...inputStyle, marginLeft: 6 }}
+                />
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Log list */}
       <div
         style={{
@@ -174,7 +369,7 @@ export function RoastLogListPage() {
           gap: 10,
         }}
       >
-        {sorted.length === 0 ? (
+        {displayed.length === 0 ? (
           <p
             style={{
               color: "var(--muted-foreground)",
@@ -186,7 +381,7 @@ export function RoastLogListPage() {
             焙煎ログがありません
           </p>
         ) : (
-          sorted.map((log) => {
+          displayed.map((log) => {
             const bean = beanMap[log.beanId];
             const level = levelMap[log.roastLevelId];
             const isBest = bestLogIds.has(log.id);
@@ -201,6 +396,7 @@ export function RoastLogListPage() {
               <button
                 type="button"
                 key={log.id}
+                aria-label={`${bean?.name ?? "—"} ${log.roastDate}`}
                 onClick={() =>
                   navigate({ to: "/logs/$logId", params: { logId: log.id } })
                 }
@@ -361,3 +557,24 @@ export function RoastLogListPage() {
     </div>
   );
 }
+
+const selectStyle: React.CSSProperties = {
+  height: 32,
+  padding: "0 8px",
+  border: "0.5px solid var(--border)",
+  borderRadius: 6,
+  background: "var(--card)",
+  color: "var(--foreground)",
+  fontSize: 12,
+  cursor: "pointer",
+};
+
+const inputStyle: React.CSSProperties = {
+  height: 32,
+  padding: "0 8px",
+  border: "0.5px solid var(--border)",
+  borderRadius: 6,
+  background: "var(--card)",
+  color: "var(--foreground)",
+  fontSize: 12,
+};

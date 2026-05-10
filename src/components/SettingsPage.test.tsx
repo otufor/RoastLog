@@ -8,9 +8,12 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react/pure";
-import { beforeEach, describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsPage } from "@/components/SettingsPage";
 import { db } from "@/db";
+import { roastLogsToCSV } from "@/lib/csvExport";
+import type { RoastLog } from "@/schemas/roastLog";
 
 function renderPage() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -61,5 +64,117 @@ describe("SettingsPage", () => {
     expect(
       screen.getByRole("heading", { name: "焙煎機", level: 2 }),
     ).toBeInTheDocument();
+  });
+
+  it("エクスポートボタンとインポート UI が表示される", async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /CSV エクスポート/ }),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText(/CSV ファイル/)).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /上書き/ })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /スキップ/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /インポート/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("エクスポートボタンクリックで downloadCSV が呼ばれる", async () => {
+    const mockCreateObjectURL = vi.fn(() => "blob:mock");
+    const mockRevokeObjectURL = vi.fn();
+    URL.createObjectURL = mockCreateObjectURL;
+    URL.revokeObjectURL = mockRevokeObjectURL;
+
+    const sampleLog: RoastLog = {
+      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      beanId: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      roastDate: "2024-01-15",
+      roastLevelId: "medium",
+      roastDeviceId: null,
+      roastDurationSec: 720,
+      firstCrackSec: null,
+      secondCrackSec: null,
+      weightBeforeG: 200,
+      weightAfterG: 170,
+      outdoorTempC: null,
+      outdoorHumidity: null,
+      indoorTempC: null,
+      tempSource: "manual",
+      weatherCode: null,
+      tasting: null,
+      overallScore: null,
+      processNote: "",
+    };
+    await db.roastLogs.put(sampleLog);
+
+    renderPage();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /CSV エクスポート/ }),
+      ).toBeInTheDocument(),
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /CSV エクスポート/ }),
+    );
+
+    await waitFor(() => expect(mockCreateObjectURL).toHaveBeenCalledOnce());
+    expect(mockRevokeObjectURL).toHaveBeenCalledOnce();
+  });
+
+  it("不正な CSV をインポートするとエラーメッセージが表示される", async () => {
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/CSV ファイル/)).toBeInTheDocument(),
+    );
+
+    const file = new File(["不正,なCSV\n行1,行2"], "bad.csv", {
+      type: "text/csv",
+    });
+    await userEvent.upload(screen.getByLabelText(/CSV ファイル/), file);
+    await userEvent.click(screen.getByRole("button", { name: /インポート/ }));
+
+    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    expect(screen.getByRole("alert").textContent).toMatch(/ヘッダー/);
+  });
+
+  it("正常な CSV をインポートすると RoastLog が保存される", async () => {
+    const sampleLog: RoastLog = {
+      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      beanId: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      roastDate: "2024-01-15",
+      roastLevelId: "medium",
+      roastDeviceId: null,
+      roastDurationSec: 720,
+      firstCrackSec: null,
+      secondCrackSec: null,
+      weightBeforeG: 200,
+      weightAfterG: 170,
+      outdoorTempC: null,
+      outdoorHumidity: null,
+      indoorTempC: null,
+      tempSource: "manual",
+      weatherCode: null,
+      tasting: null,
+      overallScore: null,
+      processNote: "",
+    };
+    const csv = roastLogsToCSV([sampleLog]);
+    const file = new File([csv], "roastlogs.csv", { type: "text/csv" });
+
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/CSV ファイル/)).toBeInTheDocument(),
+    );
+
+    await userEvent.upload(screen.getByLabelText(/CSV ファイル/), file);
+    await userEvent.click(screen.getByRole("button", { name: /インポート/ }));
+
+    await waitFor(async () => {
+      const saved = await db.roastLogs.get(sampleLog.id);
+      expect(saved).toBeDefined();
+    });
   });
 });
