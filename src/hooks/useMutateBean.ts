@@ -54,7 +54,7 @@ export function useSetBestLog() {
       logId: string;
     }) => {
       const bean = await repo.findById(beanId);
-      if (!bean) return;
+      if (!bean) throw new Error(`Bean not found: ${beanId}`);
       await repo.save({ ...bean, bestLogId: logId });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["beans"] }),
