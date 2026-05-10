@@ -6,6 +6,7 @@ import { db } from "@/db";
 import {
   useCreateRoastLog,
   useDeleteRoastLog,
+  useUpdateRoastLog,
 } from "@/hooks/useMutateRoastLog";
 import { usePreviousRoastLog, useRoastLogs } from "@/hooks/useRoastLogs";
 
@@ -171,6 +172,99 @@ describe("useRoastLogs", () => {
       del.current.mutate(logId);
     });
     await waitFor(() => expect(logs.current.data).toHaveLength(0));
+  });
+
+  it("useDeleteRoastLog では Bean.stockG が変化しない", async () => {
+    await db.beans.put({
+      id: BASE_INPUT.beanId,
+      name: "エチオピア イルガチェフェ",
+      origin: "エチオピア",
+      productName: "",
+      shopName: "",
+      purchasedAt: null,
+      importedAt: null,
+      stockG: 500,
+      bestLogId: null,
+      note: "",
+      totalG: 0,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
+    });
+
+    const qc = makeQc();
+    const wrapper = makeWrapper(qc);
+    const { result: create } = renderHook(() => useCreateRoastLog(), {
+      wrapper,
+    });
+    const { result: del } = renderHook(() => useDeleteRoastLog(), { wrapper });
+
+    await act(async () => {
+      create.current.mutate(BASE_INPUT);
+    });
+    await waitFor(() => expect(create.current.isSuccess).toBe(true));
+
+    const logId = create.current.data?.id ?? "";
+    const stockAfterCreate =
+      (await db.beans.get(BASE_INPUT.beanId))?.stockG ?? 0;
+
+    await act(async () => {
+      del.current.mutate(logId);
+    });
+    await waitFor(() => expect(del.current.isSuccess).toBe(true));
+
+    const bean = await db.beans.get(BASE_INPUT.beanId);
+    expect(bean?.stockG).toBe(stockAfterCreate);
+  });
+
+  it("useUpdateRoastLog では Bean.stockG が変化しない", async () => {
+    await db.beans.put({
+      id: BASE_INPUT.beanId,
+      name: "エチオピア イルガチェフェ",
+      origin: "エチオピア",
+      productName: "",
+      shopName: "",
+      purchasedAt: null,
+      importedAt: null,
+      stockG: 500,
+      bestLogId: null,
+      note: "",
+      totalG: 0,
+      flavorTagIds: [],
+      process: "",
+      region: "",
+      altitude: "",
+      variety: "",
+    });
+
+    const qc = makeQc();
+    const wrapper = makeWrapper(qc);
+    const { result: create } = renderHook(() => useCreateRoastLog(), {
+      wrapper,
+    });
+    const { result: update } = renderHook(() => useUpdateRoastLog(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      create.current.mutate(BASE_INPUT);
+    });
+    await waitFor(() => expect(create.current.isSuccess).toBe(true));
+
+    const log = create.current.data;
+    if (!log) throw new Error("create.current.data is undefined");
+    const stockAfterCreate =
+      (await db.beans.get(BASE_INPUT.beanId))?.stockG ?? 0;
+
+    await act(async () => {
+      update.current.mutate({ ...log, weightBeforeG: 999 });
+    });
+    await waitFor(() => expect(update.current.isSuccess).toBe(true));
+
+    const bean = await db.beans.get(BASE_INPUT.beanId);
+    expect(bean?.stockG).toBe(stockAfterCreate);
   });
 });
 
