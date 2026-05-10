@@ -171,6 +171,7 @@ export function RoastLogForm({
             <Select
               value={field.state.value || null}
               onValueChange={(v) => field.handleChange(v ?? "")}
+              items={beans.map((b) => ({ value: b.id, label: b.name }))}
             >
               <SelectTrigger id="log-bean-id" className="w-full">
                 <SelectValue placeholder="豆を選択" />
@@ -234,6 +235,7 @@ export function RoastLogForm({
             <Select
               value={field.state.value || null}
               onValueChange={(v) => field.handleChange(v ?? "")}
+              items={roastLevels.map((l) => ({ value: l.id, label: l.label }))}
             >
               <SelectTrigger id="log-roast-level-id" className="w-full">
                 <SelectValue placeholder="焙煎度を選択" />
@@ -271,6 +273,10 @@ export function RoastLogForm({
             <Select
               value={field.state.value ?? undefined}
               onValueChange={(v) => field.handleChange(v === "" ? null : v)}
+              items={[
+                { value: "", label: "なし" },
+                ...roastDevices.map((d) => ({ value: d.id, label: d.name })),
+              ]}
             >
               <SelectTrigger id="log-roast-device-id" className="w-full">
                 <SelectValue placeholder="なし" />
