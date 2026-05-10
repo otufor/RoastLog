@@ -11,7 +11,7 @@ export const Route = createRootRoute({
         overflow: "hidden",
       }}
     >
-      <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+      <div style={{ flex: 1, overflow: "auto", position: "relative" }}>
         <Outlet />
       </div>
       <BottomTabBar />
