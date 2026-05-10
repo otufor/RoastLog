@@ -4,6 +4,7 @@ import { StarRating } from "@/components/StarRating";
 import { calcWeightLossRate } from "@/domain/roastLog";
 import { useBeans } from "@/hooks/useBeans";
 import { useFlavorTags } from "@/hooks/useFlavorTags";
+import { useSetBestLog } from "@/hooks/useMutateBean";
 import { useDeleteRoastLog } from "@/hooks/useMutateRoastLog";
 import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
@@ -32,6 +33,7 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
   const { data: previousLog, isLoading: previousLogLoading } =
     usePreviousRoastLog(logId, log?.beanId ?? null);
   const { mutateAsync: deleteLog } = useDeleteRoastLog();
+  const { mutateAsync: setBestLog } = useSetBestLog();
 
   if (
     logLoading ||
@@ -65,6 +67,15 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{bean?.name ?? "—"}</h1>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              log.beanId && setBestLog({ beanId: log.beanId, logId: log.id })
+            }
+            className="px-4 py-2 rounded-lg border border-border text-sm font-medium"
+          >
+            BestRecipe に指定
+          </button>
           <button
             type="button"
             onClick={handleEdit}

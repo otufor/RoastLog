@@ -204,4 +204,144 @@ describe("BeanDetailPage", () => {
     await waitFor(() => expect(screen.getByText("パナマ")).toBeInTheDocument());
     expect(screen.getByText("まだ焙煎していません")).toBeInTheDocument();
   });
+
+  it("bestLogId が設定済みの場合、BestRecipe サマリーを表示する", async () => {
+    const beanId = crypto.randomUUID();
+    const logId = crypto.randomUUID();
+    const levelId = "medium-001";
+
+    await db.roastLevels.put({
+      id: levelId,
+      label: "中煎り",
+      color: "#B06B1E",
+      order: 3,
+    });
+    await db.roastDevices.put({
+      id: "dev-1",
+      name: "手網",
+      method: "",
+      note: "",
+    });
+
+    const log = {
+      id: logId,
+      beanId,
+      roastDate: "2025-06-01",
+      roastLevelId: levelId,
+      roastDeviceId: "dev-1",
+      roastDurationSec: 480,
+      firstCrackSec: 300,
+      secondCrackSec: null,
+      weightBeforeG: 200,
+      weightAfterG: 170,
+      outdoorTempC: null,
+      outdoorHumidity: null,
+      indoorTempC: null,
+      tempSource: "manual" as const,
+      weatherCode: null,
+      tasting: null,
+      overallScore: 5,
+      processNote: "",
+    };
+
+    await db.beans.put({
+      ...BASE_BEAN,
+      id: beanId,
+      name: "エチオピア",
+      bestLogId: logId,
+    });
+    await db.roastLogs.put(log);
+
+    renderAt(beanId);
+    await waitFor(() =>
+      expect(screen.getByText("エチオピア")).toBeInTheDocument(),
+    );
+
+    expect(screen.getByText("BestRecipe")).toBeInTheDocument();
+    expect(screen.getAllByText("2025-06-01").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("中煎り").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/15\.0%/).length).toBeGreaterThan(0);
+  });
+
+  it("bestLogId が null の場合、BestRecipe プレースホルダーを表示する", async () => {
+    const id = crypto.randomUUID();
+    await db.beans.put({
+      ...BASE_BEAN,
+      id,
+      name: "コスタリカ",
+      bestLogId: null,
+    });
+
+    renderAt(id);
+    await waitFor(() =>
+      expect(screen.getByText("コスタリカ")).toBeInTheDocument(),
+    );
+
+    expect(screen.getByText("BestRecipe")).toBeInTheDocument();
+    expect(screen.getByText("まだ指定されていません")).toBeInTheDocument();
+  });
+
+  it("bestLogId が null でも最高スコアのログがあれば候補として「指定」ボタンを表示する", async () => {
+    const beanId = crypto.randomUUID();
+    const logId = crypto.randomUUID();
+    const levelId = "light-001";
+
+    await db.roastLevels.put({
+      id: levelId,
+      label: "浅煎り",
+      color: "#C8A97E",
+      order: 1,
+    });
+    await db.roastDevices.put({
+      id: "dev-2",
+      name: "手網",
+      method: "",
+      note: "",
+    });
+
+    await db.beans.put({
+      ...BASE_BEAN,
+      id: beanId,
+      name: "ブラジル",
+      bestLogId: null,
+    });
+    await db.roastLogs.put({
+      id: logId,
+      beanId,
+      roastDate: "2025-07-10",
+      roastLevelId: levelId,
+      roastDeviceId: "dev-2",
+      roastDurationSec: 600,
+      firstCrackSec: 320,
+      secondCrackSec: null,
+      weightBeforeG: 300,
+      weightAfterG: 255,
+      outdoorTempC: null,
+      outdoorHumidity: null,
+      indoorTempC: null,
+      tempSource: "manual" as const,
+      weatherCode: null,
+      tasting: null,
+      overallScore: 4,
+      processNote: "",
+    });
+
+    const user = userEvent.setup();
+    renderAt(beanId);
+
+    await waitFor(() =>
+      expect(screen.getByText("ブラジル")).toBeInTheDocument(),
+    );
+
+    expect(
+      screen.getByRole("button", { name: "BestRecipe に指定" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "BestRecipe に指定" }));
+
+    await waitFor(async () => {
+      const stored = await db.beans.get(beanId);
+      expect(stored?.bestLogId).toBe(logId);
+    });
+  });
 });

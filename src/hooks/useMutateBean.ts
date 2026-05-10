@@ -42,3 +42,21 @@ export function useDeleteBean() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["beans"] }),
   });
 }
+
+export function useSetBestLog() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      beanId,
+      logId,
+    }: {
+      beanId: string;
+      logId: string;
+    }) => {
+      const bean = await repo.findById(beanId);
+      if (!bean) throw new Error(`Bean not found: ${beanId}`);
+      await repo.save({ ...bean, bestLogId: logId });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["beans"] }),
+  });
+}

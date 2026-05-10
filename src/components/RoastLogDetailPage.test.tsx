@@ -253,6 +253,29 @@ describe("RoastLogDetailPage", () => {
     expect(screen.queryByText("前回ログとの差分")).not.toBeInTheDocument();
   });
 
+  it("「BestRecipe に指定」ボタンをクリックすると bean.bestLogId が更新される", async () => {
+    await db.beans.put(BEAN);
+    await db.roastLevels.put(LEVEL);
+    await db.roastDevices.put(DEVICE);
+    await db.roastLogs.put(LOG);
+
+    const user = userEvent.setup();
+    renderDetailPage(LOG.id);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "BestRecipe に指定" }),
+      ).toBeInTheDocument(),
+    );
+
+    await user.click(screen.getByRole("button", { name: "BestRecipe に指定" }));
+
+    await waitFor(async () => {
+      const stored = await db.beans.get(BEAN.id);
+      expect(stored?.bestLogId).toBe(LOG.id);
+    });
+  });
+
   it("「削除」ボタンでログを削除し一覧へ遷移する", async () => {
     await db.beans.put(BEAN);
     await db.roastLevels.put(LEVEL);
