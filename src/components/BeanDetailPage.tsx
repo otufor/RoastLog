@@ -5,7 +5,11 @@ import { StarRating } from "@/components/StarRating";
 import { calcWeightLossRate } from "@/domain/roastLog";
 import { useBean } from "@/hooks/useBeans";
 import { useFlavorTags } from "@/hooks/useFlavorTags";
-import { useDeleteBean, useUpdateBean } from "@/hooks/useMutateBean";
+import {
+  useDeleteBean,
+  useSetBestLog,
+  useUpdateBean,
+} from "@/hooks/useMutateBean";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
 import { useRoastLogs } from "@/hooks/useRoastLogs";
 import type { Bean } from "@/schemas/bean";
@@ -49,6 +53,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
   const { data: flavorTags = [], isLoading: tagsLoading } = useFlavorTags();
   const { mutateAsync: deleteBean } = useDeleteBean();
   const { mutateAsync: updateBean } = useUpdateBean();
+  const { mutateAsync: setBestLog } = useSetBestLog();
 
   const [stockSheet, setStockSheet] = useState(false);
   const [adjustAmt, setAdjustAmt] = useState("");
@@ -77,13 +82,19 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
   const beanLogs = logs
     .filter((l) => l.beanId === beanId)
     .sort((a, b) => b.roastDate.localeCompare(a.roastDate));
-  const bestLog = beanLogs
-    .filter((log) => log.overallScore != null)
-    .reduce<(typeof beanLogs)[0] | null>((best, log) => {
-      if (!best || (log.overallScore ?? 0) > (best.overallScore ?? 0))
-        return log;
-      return best;
-    }, null);
+  const bestLog = bean.bestLogId
+    ? (beanLogs.find((l) => l.id === bean.bestLogId) ?? null)
+    : null;
+  const suggestedLog =
+    bestLog === null
+      ? beanLogs
+          .filter((log) => log.overallScore != null)
+          .reduce<(typeof beanLogs)[0] | null>((best, log) => {
+            if (!best || (log.overallScore ?? 0) > (best.overallScore ?? 0))
+              return log;
+            return best;
+          }, null)
+      : null;
 
   const pct = stockPct(bean);
 
@@ -397,6 +408,166 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
             {bean.note}
           </div>
         )}
+
+        {/* BestRecipe */}
+        <div style={{ marginBottom: 12 }}>
+          <div
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.06em",
+              color: "var(--muted-foreground)",
+              marginBottom: 8,
+              paddingLeft: 2,
+            }}
+          >
+            BestRecipe
+          </div>
+          {bestLog ? (
+            <div
+              style={{
+                background: "var(--card)",
+                border: "0.5px solid #2D7D52",
+                borderRadius: 10,
+                padding: "12px 14px",
+                boxShadow: "0 1px 2px rgba(28,23,20,0.04)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    marginBottom: 4,
+                  }}
+                >
+                  {levelMap[bestLog.roastLevelId] && (
+                    <RoastBadge
+                      level={levelMap[bestLog.roastLevelId]}
+                      size="sm"
+                    />
+                  )}
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 500,
+                      padding: "2px 7px",
+                      borderRadius: 999,
+                      background: "#E0F2E9",
+                      color: "#2D7D52",
+                    }}
+                  >
+                    ベスト
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontFamily: "ui-monospace, monospace",
+                    fontSize: 11,
+                    color: "var(--muted-foreground)",
+                  }}
+                >
+                  {bestLog.roastDate}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginBottom: 2,
+                  }}
+                >
+                  <StarRating value={bestLog.overallScore} size={12} />
+                </div>
+                <div
+                  style={{
+                    fontFamily: "ui-monospace, monospace",
+                    fontSize: 11,
+                    color: "var(--muted-foreground)",
+                  }}
+                >
+                  {calcWeightLossRate(
+                    bestLog.weightBeforeG,
+                    bestLog.weightAfterG,
+                  ).toFixed(1)}
+                  %
+                </div>
+              </div>
+            </div>
+          ) : suggestedLog ? (
+            <div
+              style={{
+                background: "var(--card)",
+                border: "0.5px solid var(--border)",
+                borderRadius: 10,
+                padding: "12px 14px",
+                boxShadow: "0 1px 2px rgba(28,23,20,0.04)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "var(--muted-foreground)",
+                    marginBottom: 4,
+                  }}
+                >
+                  候補: {suggestedLog.roastDate}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {levelMap[suggestedLog.roastLevelId] && (
+                    <RoastBadge
+                      level={levelMap[suggestedLog.roastLevelId]}
+                      size="sm"
+                    />
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setBestLog({ beanId: bean.id, logId: suggestedLog.id })
+                }
+                style={{
+                  height: 34,
+                  padding: "0 12px",
+                  background: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                  border: 0,
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
+              >
+                BestRecipe に指定
+              </button>
+            </div>
+          ) : (
+            <div
+              style={{
+                background: "var(--card)",
+                border: "0.5px solid var(--border)",
+                borderRadius: 10,
+                padding: "24px 0",
+                textAlign: "center",
+                fontSize: 13,
+                color: "var(--muted-foreground)",
+              }}
+            >
+              まだ指定されていません
+            </div>
+          )}
+        </div>
 
         {/* Roast history */}
         <div style={{ marginBottom: 16 }}>
