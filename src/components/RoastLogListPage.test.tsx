@@ -198,4 +198,73 @@ describe("RoastLogListPage", () => {
 
     expect(chipBean).toHaveAttribute("aria-pressed", "true");
   });
+
+  it("豆フィルターで特定の豆のログだけ表示される", async () => {
+    const BEAN_ID_2 = "550e8400-e29b-41d4-a716-446655440002";
+    const beanB: Bean = {
+      ...SAMPLE_BEAN,
+      id: BEAN_ID_2,
+      name: "コロンビア スプレモ",
+    };
+    await db.beans.put(SAMPLE_BEAN);
+    await db.beans.put(beanB);
+    await db.roastLevels.put(SAMPLE_LEVEL);
+    await db.roastLogs.put(
+      makeLog({ beanId: BEAN_ID, roastDate: "2025-04-20" }),
+    );
+    await db.roastLogs.put(
+      makeLog({ beanId: BEAN_ID_2, roastDate: "2025-04-10" }),
+    );
+
+    renderPage();
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("button", { name: /エチオピア|コロンビア/ }),
+      ).toHaveLength(2),
+    );
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /豆/ }));
+
+    const select = await screen.findByRole("combobox", {
+      name: /豆で絞り込み/,
+    });
+    await user.selectOptions(select, "エチオピア イルガチェフェ");
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /コロンビア スプレモ/ }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("button", { name: /エチオピア イルガチェフェ/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("ソート切り替えで overallScore 降順に並ぶ", async () => {
+    await db.beans.put(SAMPLE_BEAN);
+    await db.roastLevels.put(SAMPLE_LEVEL);
+    await db.roastLogs.put(
+      makeLog({ overallScore: 2, roastDate: "2025-04-01" }),
+    );
+    await db.roastLogs.put(
+      makeLog({ overallScore: 5, roastDate: "2025-04-20" }),
+    );
+
+    renderPage();
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("button", { name: /エチオピア/ }),
+      ).toHaveLength(2),
+    );
+
+    const user = userEvent.setup();
+    const sortSelect = screen.getByRole("combobox", { name: /並び順/ });
+    await user.selectOptions(sortSelect, "overallScore-desc");
+
+    const cards = screen.getAllByRole("button", { name: /エチオピア/ });
+    // スコア5のカード(2025-04-20)が先、スコア2のカード(2025-04-01)が後
+    expect(cards[0]).toHaveTextContent("2025-04-20");
+    expect(cards[1]).toHaveTextContent("2025-04-01");
+  });
 });
