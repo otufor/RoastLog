@@ -59,6 +59,11 @@ export function RoastLogListPage() {
   const displayed = filterAndSortLogs(logs, filter, sortKey, sortDir);
 
   function handleChipClick(id: FilterChipId) {
+    if (id === "all") {
+      setActiveChip("all");
+      setFilter({});
+      return;
+    }
     if (activeChip === id) {
       setActiveChip("all");
     } else {

@@ -122,13 +122,42 @@ function deserializeRow(headers: string[], cells: string[]): unknown {
   };
 }
 
+function splitCSVRows(text: string): string[] {
+  const rows: string[] = [];
+  let row = "";
+  let inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuote && text[i + 1] === '"') {
+        row += '""';
+        i++;
+        continue;
+      }
+      inQuote = !inQuote;
+      row += ch;
+      continue;
+    }
+    if (!inQuote && (ch === "\n" || ch === "\r")) {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      if (row.trim() !== "") rows.push(row);
+      row = "";
+      continue;
+    }
+    row += ch;
+  }
+  if (row.trim() !== "") rows.push(row);
+  return rows;
+}
+
 export function parseRoastLogCSV(text: string): ParseResult {
-  const lines = text.split("\n").filter((l) => l.trim() !== "");
+  const lines = splitCSVRows(text);
   if (lines.length === 0) {
     return { ok: false, error: "ヘッダー行がありません" };
   }
 
-  const headers = parseCSVLine(lines[0]);
+  const headerLine = lines[0].replace(/^﻿/, "").replace(/\r$/, "");
+  const headers = parseCSVLine(headerLine);
   const missing = REQUIRED_HEADERS.filter((h) => !headers.includes(h));
   if (missing.length > 0) {
     return {
