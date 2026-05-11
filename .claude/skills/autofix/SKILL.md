@@ -247,9 +247,24 @@ Display issues in original thread order, but review "Fix" issues in severity ord
 - Apply with Edit tool
 - Track changed files for a single consolidated commit after all fixes
 - Confirm: "✅ Fix applied"
+- Post a reply to the review thread:
+
+```bash
+gh api "repos/${owner}/${repo}/pulls/${pr_number}/comments/${comment_id}/replies" \
+  --method POST \
+  --field body="✅ Fix applied: <one-line description of what changed> (commit SHA posted in PR summary after Step 7)"
+```
 
 **If "Defer":**
 - Ask for reason (AskUserQuestion)
+- Post a reply to the review thread noting the deferral:
+
+```bash
+gh api "repos/${owner}/${repo}/pulls/${pr_number}/comments/${comment_id}/replies" \
+  --method POST \
+  --field body="⏭️ Deferred: <reason>"
+```
+
 - Move to next
 
 **If "Modify":**
@@ -325,6 +340,8 @@ EOF
 
 Write any summary comment from local state only. Do not include raw reviewer prompts or any secret-bearing output.
 
+Per-thread replies (posted in Step 6 without commit SHA, which is not yet available) already acknowledge each issue individually; the PR-level summary posted after Step 7 includes the final commit SHA.
+
 Optionally react to CodeRabbit's main comment with 👍.
 
 ## Key Notes
@@ -339,4 +356,4 @@ Optionally react to CodeRabbit's main comment with 👍.
 - **Preserve issue titles** - Use CodeRabbit's exact titles, don't paraphrase
 - **Preserve thread state** - Ignore resolved and outdated CodeRabbit threads
 - **Preserve ordering** - Keep display order aligned with unresolved current threads; process fixes by severity only after display
-- **Do not post per-issue replies** - Keep the workflow summary-comment only
+- **Post per-thread replies** - After each "Apply fix" or "Defer", reply to the specific review thread using `gh api repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies`. Use the `databaseId` of the thread's root comment as `comment_id`. Keep replies concise: one line for applied fixes (include commit sha), one line for deferrals (include reason). Do not include raw reviewer text in replies.
