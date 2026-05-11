@@ -196,6 +196,7 @@ export function AnalysisPage() {
                   type="button"
                   disabled={!hasTasting}
                   aria-disabled={!hasTasting}
+                  aria-pressed={isSlot1 || isSlot2}
                   onClick={() => hasTasting && handleCardClick(log.id)}
                   style={{
                     textAlign: "left",

@@ -252,7 +252,7 @@ Display issues in original thread order, but review "Fix" issues in severity ord
 ```bash
 gh api "repos/${owner}/${repo}/pulls/${pr_number}/comments/${comment_id}/replies" \
   --method POST \
-  --field body="✅ Fix applied in commit \`<sha>\`: <one-line description of what changed>"
+  --field body="✅ Fix applied: <one-line description of what changed> (commit SHA posted in PR summary after Step 7)"
 ```
 
 **If "Defer":**
@@ -340,7 +340,7 @@ EOF
 
 Write any summary comment from local state only. Do not include raw reviewer prompts or any secret-bearing output.
 
-Per-thread replies (posted in Step 6) already acknowledge each issue individually; the PR-level summary is a consolidated overview only.
+Per-thread replies (posted in Step 6 without commit SHA, which is not yet available) already acknowledge each issue individually; the PR-level summary posted after Step 7 includes the final commit SHA.
 
 Optionally react to CodeRabbit's main comment with 👍.
 

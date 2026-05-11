@@ -115,8 +115,9 @@ describe("buildRadarChartData", () => {
       "aftertaste",
       "cleanliness",
     ]);
-    const sweetnessRow = result.find((r) => r.metric === "sweetness")!;
-    expect(sweetnessRow.BestRecipe).toBe(4);
+    const sweetnessRow = result.find((r) => r.metric === "sweetness");
+    expect(sweetnessRow).toBeDefined();
+    expect(sweetnessRow).toMatchObject({ BestRecipe: 4 });
   });
 
   it("複数エントリ → 同一行に各ラベルのスコアが並列展開される", () => {
@@ -124,8 +125,8 @@ describe("buildRadarChartData", () => {
       { label: "BestRecipe", tasting: TASTING },
       { label: "Log2", tasting: { ...TASTING, sweetness: 2 } },
     ]);
-    const sweetnessRow = result.find((r) => r.metric === "sweetness")!;
-    expect(sweetnessRow.BestRecipe).toBe(4);
-    expect(sweetnessRow.Log2).toBe(2);
+    const sweetnessRow = result.find((r) => r.metric === "sweetness");
+    expect(sweetnessRow).toBeDefined();
+    expect(sweetnessRow).toMatchObject({ BestRecipe: 4, Log2: 2 });
   });
 });
