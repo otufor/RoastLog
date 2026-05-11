@@ -120,30 +120,158 @@ describe("AnalysisPage", () => {
     );
   });
 
-  it("Tasting なしのログは重ね表示の選択肢から除外される", async () => {
-    const logWithTasting = makeLog({
-      tasting: TASTING,
-      roastDate: "2025-01-01",
-    });
-    const logWithout = makeLog({ tasting: null, roastDate: "2025-02-01" });
-    await db.beans.put({ ...BEAN, bestLogId: logWithTasting.id });
+  it("豆選択・ログ0件 → 「まだ焙煎ログがありません」が表示される", async () => {
     await db.beans.put(BEAN);
-    await db.roastLogs.put(logWithTasting);
-    await db.roastLogs.put(logWithout);
+    const user = userEvent.setup();
     renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    await waitFor(() =>
+      expect(screen.getByText("まだ焙煎ログがありません")).toBeInTheDocument(),
+    );
+  });
 
+  it("豆選択・ログあり → 折れ線グラフが表示される", async () => {
+    await db.beans.put(BEAN);
+    await db.roastLogs.put(makeLog());
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    await waitFor(() =>
+      expect(screen.getByTestId("line-chart")).toBeInTheDocument(),
+    );
+  });
+
+  it("T5: Bean を切り替えると両セレクターがリセットされ新 Bean の BestRecipe がデフォルト選択される", async () => {
+    const BEAN_B = { ...BEAN, id: crypto.randomUUID(), name: "ケニア ニエリ" };
+    const logA = makeLog({
+      beanId: BEAN.id,
+      tasting: TASTING,
+      roastDate: "2025-06-01",
+    });
+    const logB = makeLog({
+      beanId: BEAN_B.id,
+      tasting: { ...TASTING, sweetness: 1 },
+      roastDate: "2025-05-01",
+    });
+    await db.beans.put({ ...BEAN, bestLogId: logA.id });
+    await db.beans.put({ ...BEAN_B, bestLogId: logB.id });
+    await db.roastLogs.put(logA);
+    await db.roastLogs.put(logB);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    // Select BEAN_A → radar shows (bestRecipe = logA)
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    await waitFor(() =>
+      expect(screen.getByTestId("radar-chart")).toBeInTheDocument(),
+    );
+    // Switch to BEAN_B → logA card disappears, logB auto-selected
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN_B.name }));
+    // logA card no longer visible
     await waitFor(() =>
       expect(
-        screen.getByRole("combobox", { name: /重ね表示/ }),
+        screen.queryByRole("button", { name: /2025-06-01/ }),
+      ).not.toBeInTheDocument(),
+    );
+    // logB card visible and radar shows
+    expect(
+      screen.getByRole("button", { name: /2025-05-01/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("radar-chart")).toBeInTheDocument();
+  });
+
+  it("T4: 2枚目カードを選択するとスロット2に入り、選択済みカードをクリックすると解除される", async () => {
+    const logA = makeLog({ tasting: TASTING, roastDate: "2025-06-01" });
+    const logB = makeLog({
+      tasting: { ...TASTING, sweetness: 2 },
+      roastDate: "2025-05-01",
+    });
+    await db.beans.put({ ...BEAN, bestLogId: logA.id });
+    await db.roastLogs.put(logA);
+    await db.roastLogs.put(logB);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    // Slot1 = logA (BestRecipe auto). Radar already shows.
+    await waitFor(() =>
+      expect(screen.getByTestId("radar-chart")).toBeInTheDocument(),
+    );
+    // Click logB → slot2
+    const cardB = await screen.findByRole("button", { name: /2025-05-01/ });
+    await user.click(cardB);
+    // Radar still shows
+    expect(screen.getByTestId("radar-chart")).toBeInTheDocument();
+    // Click logA to deselect slot1
+    const cardA = screen.getByRole("button", { name: /2025-06-01/ });
+    await user.click(cardA);
+    // Radar still shows (logB remains in slot2)
+    expect(screen.getByTestId("radar-chart")).toBeInTheDocument();
+  });
+
+  it("T3: BestRecipe ありの Bean を選択すると自動でレーダーチャートが表示される", async () => {
+    const log = makeLog({ tasting: TASTING, roastDate: "2025-06-01" });
+    await db.beans.put({ ...BEAN, bestLogId: log.id });
+    await db.roastLogs.put(log);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    await waitFor(() =>
+      expect(screen.getByTestId("radar-chart")).toBeInTheDocument(),
+    );
+  });
+
+  it("T2: Tasting なしカードをクリックしても選択状態にならない", async () => {
+    await db.beans.put(BEAN);
+    await db.roastLogs.put(makeLog({ roastDate: "2025-06-01", tasting: null }));
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    const card = await screen.findByRole("button", { name: /2025-06-01/ });
+    expect(card).toBeDisabled();
+    await user.click(card);
+    // radar placeholder should still show (not radar chart)
+    expect(screen.queryByTestId("radar-chart")).not.toBeInTheDocument();
+    expect(screen.getByText(/BestRecipe/)).toBeInTheDocument();
+  });
+
+  it("T1: 豆選択後、その Bean のログがカードとして表示される", async () => {
+    await db.beans.put(BEAN);
+    await db.roastLogs.put(makeLog({ roastDate: "2025-06-01" }));
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /2025-06-01/ }),
       ).toBeInTheDocument(),
     );
-
-    const user = userEvent.setup();
-    await user.click(screen.getByRole("combobox", { name: /重ね表示/ }));
-
-    await waitFor(() => {
-      expect(screen.getByText("2025-01-01")).toBeInTheDocument();
-      expect(screen.queryByText("2025-02-01")).not.toBeInTheDocument();
-    });
   });
 });

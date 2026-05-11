@@ -39,32 +39,20 @@ const TASTING: Tasting = {
 };
 
 describe("buildLineChartData", () => {
-  it("ログなし → 3系列それぞれ空データ", () => {
+  it("ログなし → WeightLossRate の1系列のみ、data が空", () => {
     const result = buildLineChartData([]);
-    expect(result).toHaveLength(3);
-    expect(result.map((s) => s.id)).toEqual([
-      "WeightLossRate",
-      "FirstCrack",
-      "SecondCrack",
-    ]);
-    for (const series of result) {
-      expect(series.data).toHaveLength(0);
-    }
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("WeightLossRate");
+    expect(result[0].data).toHaveLength(0);
   });
 
   it("1件 → WeightLossRate が正しく計算される", () => {
     // (1 - 210/250) * 100 = 16.0
     const result = buildLineChartData([makeLog()]);
-    const wlr = result.find((s) => s.id === "WeightLossRate")!;
+    const [wlr] = result;
     expect(wlr.data).toHaveLength(1);
     expect(wlr.data[0].x).toBe(1);
     expect(wlr.data[0].y).toBeCloseTo(16, 5);
-  });
-
-  it("firstCrackSec: null のログは FirstCrack 系列から除外される", () => {
-    const result = buildLineChartData([makeLog({ firstCrackSec: null })]);
-    const fc = result.find((s) => s.id === "FirstCrack")!;
-    expect(fc.data).toHaveLength(0);
   });
 
   it("複数ログが roastDate 昇順で x=1,2,3 に並ぶ", () => {
@@ -86,7 +74,7 @@ describe("buildLineChartData", () => {
       }),
     ];
     const result = buildLineChartData(logs);
-    const wlr = result.find((s) => s.id === "WeightLossRate")!;
+    const [wlr] = result;
     // 昇順: Jan(16%), Feb(20%), Mar(20%)
     expect(wlr.data[0].x).toBe(1);
     expect(wlr.data[1].x).toBe(2);
@@ -128,7 +116,7 @@ describe("buildRadarChartData", () => {
       "cleanliness",
     ]);
     const sweetnessRow = result.find((r) => r.metric === "sweetness")!;
-    expect(sweetnessRow["BestRecipe"]).toBe(4);
+    expect(sweetnessRow.BestRecipe).toBe(4);
   });
 
   it("複数エントリ → 同一行に各ラベルのスコアが並列展開される", () => {
@@ -137,7 +125,7 @@ describe("buildRadarChartData", () => {
       { label: "Log2", tasting: { ...TASTING, sweetness: 2 } },
     ]);
     const sweetnessRow = result.find((r) => r.metric === "sweetness")!;
-    expect(sweetnessRow["BestRecipe"]).toBe(4);
-    expect(sweetnessRow["Log2"]).toBe(2);
+    expect(sweetnessRow.BestRecipe).toBe(4);
+    expect(sweetnessRow.Log2).toBe(2);
   });
 });

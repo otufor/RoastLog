@@ -9,13 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  buildLineChartData,
-  buildRadarChartData,
-  logsWithTasting,
-} from "@/domain/analysis";
+import { buildLineChartData, buildRadarChartData } from "@/domain/analysis";
+import { calcWeightLossRate } from "@/domain/roastLog";
 import { useBeans } from "@/hooks/useBeans";
+import { useRoastLevels } from "@/hooks/useRoastLevels";
 import { useRoastLogs } from "@/hooks/useRoastLogs";
+import type { Bean } from "@/schemas/bean";
 import type { RoastLog } from "@/schemas/roastLog";
 
 const RADAR_KEYS_JP: Record<string, string> = {
@@ -27,138 +26,233 @@ const RADAR_KEYS_JP: Record<string, string> = {
   cleanliness: "クリーン",
 };
 
+const COLOR_1 = "#2D7D52";
+const COLOR_2 = "#B06B1E";
+
+function defaultSelector1Id(
+  bean: Bean | null,
+  beanLogs: RoastLog[],
+): string | null {
+  if (!bean) return null;
+  const sorted = [...beanLogs].sort((a, b) =>
+    b.roastDate.localeCompare(a.roastDate),
+  );
+  const best = bean.bestLogId
+    ? (beanLogs.find((l) => l.id === bean.bestLogId && l.tasting !== null) ??
+      null)
+    : null;
+  return (best ?? sorted.find((l) => l.tasting !== null) ?? null)?.id ?? null;
+}
+
 export function AnalysisPage() {
   const { data: beans = [], isLoading: beansLoading } = useBeans();
   const { data: allLogs = [], isLoading: logsLoading } = useRoastLogs();
+  const { data: levels = [], isLoading: levelsLoading } = useRoastLevels();
 
   const [selectedBeanId, setSelectedBeanId] = useState<string | null>(null);
-  const [overlayLogId, setOverlayLogId] = useState<string | null>(null);
+  const [selector1Id, setSelector1Id] = useState<string | null>(null);
+  const [selector2Id, setSelector2Id] = useState<string | null>(null);
 
-  if (beansLoading || logsLoading) return null;
+  if (beansLoading || logsLoading || levelsLoading) return null;
 
-  const selectedBean = beans.find((b) => b.id === selectedBeanId) ?? null;
-  const beanLogs = allLogs.filter((l) => l.beanId === selectedBeanId);
+  const levelMap = Object.fromEntries(levels.map((l) => [l.id, l]));
+  const beanLogs = allLogs
+    .filter((l) => l.beanId === selectedBeanId)
+    .sort((a, b) => b.roastDate.localeCompare(a.roastDate));
+
   const lineData =
-    selectedBeanId !== null ? buildLineChartData(beanLogs) : null;
-
-  const bestLog =
-    selectedBean?.bestLogId != null
-      ? (allLogs.find((l) => l.id === selectedBean.bestLogId) ?? null)
+    selectedBeanId !== null
+      ? buildLineChartData([...beanLogs].reverse())
       : null;
 
-  const overlayOptions = logsWithTasting(allLogs);
-  const overlayLog =
-    overlayLogId !== null
-      ? (overlayOptions.find((l) => l.id === overlayLogId) ?? null)
-      : null;
+  function handleBeanChange(beanId: string) {
+    const bean = beans.find((b) => b.id === beanId) ?? null;
+    const logs = allLogs.filter((l) => l.beanId === beanId);
+    setSelectedBeanId(beanId);
+    setSelector1Id(defaultSelector1Id(bean, logs));
+    setSelector2Id(null);
+  }
 
-  const radarEntries: { label: string; tasting: RoastLog["tasting"] }[] = [
-    ...(bestLog?.tasting
-      ? [{ label: "BestRecipe", tasting: bestLog.tasting }]
-      : []),
-    ...(overlayLog?.tasting
-      ? [{ label: overlayLog.roastDate, tasting: overlayLog.tasting }]
-      : []),
+  function handleCardClick(logId: string) {
+    if (logId === selector1Id) {
+      setSelector1Id(null);
+      return;
+    }
+    if (logId === selector2Id) {
+      setSelector2Id(null);
+      return;
+    }
+    if (selector1Id === null) {
+      setSelector1Id(logId);
+      return;
+    }
+    if (selector2Id === null) {
+      setSelector2Id(logId);
+      return;
+    }
+    setSelector1Id(logId);
+  }
+
+  const log1 = selector1Id
+    ? (allLogs.find((l) => l.id === selector1Id) ?? null)
+    : null;
+  const log2 = selector2Id
+    ? (allLogs.find((l) => l.id === selector2Id) ?? null)
+    : null;
+
+  const radarEntries: {
+    label: string;
+    tasting: NonNullable<RoastLog["tasting"]>;
+  }[] = [
+    ...(log1?.tasting ? [{ label: "ログ1", tasting: log1.tasting }] : []),
+    ...(log2?.tasting ? [{ label: "ログ2", tasting: log2.tasting }] : []),
   ];
   const radarData =
-    radarEntries.length > 0
-      ? buildRadarChartData(
-          radarEntries as {
-            label: string;
-            tasting: NonNullable<RoastLog["tasting"]>;
-          }[],
-        )
-      : null;
-
-  const radarKeys = radarEntries.map((e) => e.label);
+    radarEntries.length > 0 ? buildRadarChartData(radarEntries) : null;
 
   return (
     <div className="p-4 flex flex-col gap-8">
       <h1 className="text-2xl font-bold">分析</h1>
 
-      {/* 折れ線グラフ */}
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium" id="bean-label">
-            豆
-          </span>
-          <Select
-            value={selectedBeanId}
-            onValueChange={(v) => setSelectedBeanId(v ?? null)}
-            items={beans.map((b) => ({ value: b.id, label: b.name }))}
-          >
-            <SelectTrigger aria-label="豆を選択" aria-labelledby="bean-label">
-              <SelectValue placeholder="豆を選択" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {beans.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* 豆セレクター */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium" id="bean-label">
+          豆
+        </span>
+        <Select
+          value={selectedBeanId}
+          onValueChange={(v) => {
+            if (v) handleBeanChange(v);
+          }}
+          items={beans.map((b) => ({ value: b.id, label: b.name }))}
+        >
+          <SelectTrigger aria-label="豆を選択" aria-labelledby="bean-label">
+            <SelectValue placeholder="豆を選択" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {beans.map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  {b.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {lineData && (
-          <div data-testid="line-chart" style={{ height: 300 }}>
-            <ResponsiveLine
-              data={lineData}
-              margin={{ top: 10, right: 40, bottom: 40, left: 50 }}
-              xScale={{ type: "linear" }}
-              yScale={{ type: "linear", stacked: false }}
-              axisBottom={{ legend: "焙煎回数", legendOffset: 32 }}
-              axisLeft={{ legend: "値", legendOffset: -40 }}
-              useMesh
-            />
-          </div>
-        )}
+      {/* 重量減少率の推移 */}
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">重量減少率の推移</h2>
+        {selectedBeanId !== null &&
+          (beanLogs.length === 0 ? (
+            <p
+              style={{
+                fontSize: 13,
+                color: "var(--muted-foreground)",
+                padding: "24px 0",
+                textAlign: "center",
+              }}
+            >
+              まだ焙煎ログがありません
+            </p>
+          ) : (
+            <div data-testid="line-chart" style={{ height: 300 }}>
+              <ResponsiveLine
+                data={lineData ?? []}
+                margin={{ top: 10, right: 40, bottom: 40, left: 50 }}
+                xScale={{ type: "linear" }}
+                yScale={{ type: "linear", stacked: false }}
+                axisBottom={{ legend: "焙煎回数", legendOffset: 32 }}
+                axisLeft={{ legend: "減少率 (%)", legendOffset: -40 }}
+                useMesh
+              />
+            </div>
+          ))}
       </section>
 
-      {/* レーダーチャート */}
+      {/* テイスティング比較 */}
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">テイスティング比較</h2>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium" id="overlay-label">
-            重ね表示
-          </span>
-          <Select
-            value={overlayLogId}
-            onValueChange={(v) => setOverlayLogId(v ?? null)}
-            items={overlayOptions.map((l) => ({
-              value: l.id,
-              label: l.roastDate,
-            }))}
-          >
-            <SelectTrigger
-              aria-label="重ね表示するログを選択"
-              aria-labelledby="overlay-label"
-            >
-              <SelectValue placeholder="ログを選択" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {overlayOptions.map((l) => (
-                  <SelectItem key={l.id} value={l.id}>
-                    {l.roastDate}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+        {selectedBeanId !== null && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {beanLogs.map((log) => {
+              const hasTasting = log.tasting !== null;
+              const isSlot1 = log.id === selector1Id;
+              const isSlot2 = log.id === selector2Id;
+              const level = levelMap[log.roastLevelId];
+              const wlr = calcWeightLossRate(
+                log.weightBeforeG,
+                log.weightAfterG,
+              );
+              let borderColor = "var(--border)";
+              if (isSlot1) borderColor = COLOR_1;
+              if (isSlot2) borderColor = COLOR_2;
+
+              return (
+                <button
+                  key={log.id}
+                  type="button"
+                  disabled={!hasTasting}
+                  aria-disabled={!hasTasting}
+                  onClick={() => hasTasting && handleCardClick(log.id)}
+                  style={{
+                    textAlign: "left",
+                    padding: "10px 14px",
+                    borderRadius: 10,
+                    border: `1.5px solid ${borderColor}`,
+                    background: "var(--card)",
+                    cursor: hasTasting ? "pointer" : "default",
+                    opacity: hasTasting ? 1 : 0.4,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "ui-monospace, monospace",
+                      fontSize: 13,
+                    }}
+                  >
+                    {log.roastDate}
+                  </span>
+                  <span
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      fontSize: 12,
+                      color: "var(--muted-foreground)",
+                    }}
+                  >
+                    {level?.label ?? "—"}
+                    <span>
+                      {log.overallScore != null
+                        ? "★".repeat(log.overallScore)
+                        : "—"}
+                    </span>
+                    <span style={{ fontFamily: "ui-monospace, monospace" }}>
+                      {wlr.toFixed(1)}%
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {radarData ? (
-          <div style={{ height: 350 }}>
+          <div data-testid="radar-chart" style={{ height: 350 }}>
             <ResponsiveRadar
               data={radarData}
-              keys={radarKeys}
+              keys={["ログ1", "ログ2"]}
               indexBy="metric"
               valueFormat=">-.1f"
               maxValue={5}
+              colors={[COLOR_1, COLOR_2]}
+              fillOpacity={0.3}
               margin={{ top: 40, right: 60, bottom: 40, left: 60 }}
               gridLabelOffset={16}
               gridLabel={({ id }) => (

@@ -533,56 +533,33 @@ export function BeanListPage() {
       </div>
 
       {/* FAB */}
-      <div
+      <button
+        type="button"
+        aria-label="豆を追加"
+        onClick={() => navigate({ to: "/beans/new" })}
         style={{
           position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          padding: "12px 16px 14px",
-          background:
-            "linear-gradient(to top, var(--background) 60%, transparent)",
-          pointerEvents: "none",
+          right: 16,
+          bottom: 76,
+          zIndex: 5,
+          width: 56,
+          height: 56,
+          borderRadius: 999,
+          border: 0,
+          background: "var(--primary)",
+          color: "var(--primary-foreground)",
+          fontSize: 28,
+          lineHeight: 1,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow:
+            "0 4px 12px rgba(176,107,30,0.28), 0 2px 4px rgba(28,23,20,0.08)",
         }}
       >
-        <button
-          type="button"
-          onClick={() => navigate({ to: "/beans/new" })}
-          style={{
-            pointerEvents: "auto",
-            width: "100%",
-            height: 52,
-            borderRadius: 10,
-            border: 0,
-            background: "var(--primary)",
-            color: "var(--primary-foreground)",
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            boxShadow:
-              "0 4px 12px rgba(176,107,30,0.28), 0 2px 4px rgba(28,23,20,0.08)",
-          }}
-        >
-          <svg
-            aria-hidden="true"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          豆を追加
-        </button>
-      </div>
+        ＋
+      </button>
     </div>
   );
 }

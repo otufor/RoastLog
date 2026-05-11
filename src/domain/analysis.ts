@@ -21,22 +21,14 @@ export function buildLineChartData(logs: RoastLog[]): LineChartSeries[] {
   const sorted = [...logs].sort((a, b) =>
     a.roastDate.localeCompare(b.roastDate),
   );
-
-  const wlr: { x: number; y: number }[] = [];
-  const fc: { x: number; y: number }[] = [];
-  const sc: { x: number; y: number }[] = [];
-
-  sorted.forEach((log, i) => {
-    const x = i + 1;
-    wlr.push({ x, y: calcWeightLossRate(log.weightBeforeG, log.weightAfterG) });
-    if (log.firstCrackSec !== null) fc.push({ x, y: log.firstCrackSec });
-    if (log.secondCrackSec !== null) sc.push({ x, y: log.secondCrackSec });
-  });
-
   return [
-    { id: "WeightLossRate", data: wlr },
-    { id: "FirstCrack", data: fc },
-    { id: "SecondCrack", data: sc },
+    {
+      id: "WeightLossRate",
+      data: sorted.map((log, i) => ({
+        x: i + 1,
+        y: calcWeightLossRate(log.weightBeforeG, log.weightAfterG),
+      })),
+    },
   ];
 }
 
