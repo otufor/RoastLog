@@ -163,9 +163,27 @@ export function AnalysisPage() {
                 margin={{ top: 10, right: 40, bottom: 40, left: 50 }}
                 xScale={{ type: "linear" }}
                 yScale={{ type: "linear", stacked: false }}
-                axisBottom={{ legend: "焙煎回数", legendOffset: 32 }}
+                yFormat=">-.1f"
+                axisBottom={{
+                  legend: "焙煎回数",
+                  legendOffset: 32,
+                  format: (v) => (Number.isInteger(v) ? String(v) : ""),
+                }}
                 axisLeft={{ legend: "減少率 (%)", legendOffset: -40 }}
                 useMesh
+                tooltip={({ point }) => (
+                  <div
+                    style={{
+                      background: "var(--card)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 6,
+                      padding: "6px 10px",
+                      fontSize: 13,
+                    }}
+                  >
+                    {point.data.yFormatted}%
+                  </div>
+                )}
               />
             </div>
           ))}
@@ -256,14 +274,16 @@ export function AnalysisPage() {
               fillOpacity={0.3}
               margin={{ top: 40, right: 60, bottom: 40, left: 60 }}
               gridLabelOffset={16}
-              gridLabel={({ id }) => (
-                <text
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fontSize={12}
-                >
-                  {RADAR_KEYS_JP[id] ?? id}
-                </text>
+              gridLabel={({ id, anchor, x, y }) => (
+                <g transform={`translate(${x}, ${y})`}>
+                  <text
+                    textAnchor={anchor}
+                    dominantBaseline="central"
+                    fontSize={12}
+                  >
+                    {RADAR_KEYS_JP[id] ?? id}
+                  </text>
+                </g>
               )}
             />
           </div>
