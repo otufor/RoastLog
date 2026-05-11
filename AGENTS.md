@@ -25,7 +25,31 @@ npx vitest run --project unit src/schemas/bean.test.ts
 npx vitest run --project browser src/repositories/beanRepository.test.ts
 ```
 
-Pre-commit hook (lefthook) runs `biome check`, `tsc --noEmit`, and `arch:check` in parallel automatically.
+Pre-commit hook (lefthook) runs `biome check`, `tsc --noEmit`, `arch:check`, and `gitleaks protect --staged` in parallel automatically.
+
+### Local setup: gitleaks
+
+gitleaks はシークレット漏洩を検知する pre-commit ツールです。初回セットアップ時にインストールしてください。
+
+```bash
+# WSL / Linux（推奨）— /usr/local/bin に配置（hooks の最小 PATH で確実に見つかる）
+GITLEAKS_VERSION=$(curl -s "https://api.github.com/repos/gitleaks/gitleaks/releases/latest" \
+  | grep -Po '"tag_name": "v\K[0-9.]+')
+wget -qO gitleaks.tar.gz \
+  "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+tar -xzf gitleaks.tar.gz gitleaks
+sudo mv gitleaks /usr/local/bin/
+rm gitleaks.tar.gz
+gitleaks version
+
+# macOS
+brew install gitleaks
+
+# Windows
+winget install gitleaks.gitleaks
+```
+
+> **WSL 注意**: git hooks は最小 PATH で実行されるため、`lefthook.yml` では絶対パス `/usr/local/bin/gitleaks` を使っています。`which gitleaks` で確認してください。
 
 ## Architecture
 

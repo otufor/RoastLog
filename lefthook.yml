@@ -9,3 +9,12 @@ pre-commit:
 
     - name: arch
       run: npm run arch:check
+
+    - name: gitleaks
+      run: /usr/local/bin/gitleaks protect --staged --redact --config .gitleaks.toml
+      fail_text: |
+        gitleaks がインストールされていません。
+        インストール方法:
+          WSL/Linux: https://github.com/gitleaks/gitleaks#installing
+          macOS:     brew install gitleaks
+          Windows:   winget install gitleaks.gitleaks
