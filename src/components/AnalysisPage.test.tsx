@@ -293,6 +293,7 @@ describe("AnalysisPage", () => {
     const ticks = chart.querySelectorAll(
       ".nivo_bottom_axis text, [class*='axis'] text",
     );
+    expect(ticks.length).toBeGreaterThan(0);
     for (const tick of ticks) {
       const text = tick.textContent ?? "";
       // 小数点を含む目盛りテキストが存在しないことを確認
@@ -325,13 +326,10 @@ describe("AnalysisPage", () => {
       chart.querySelector(
         "rect[fill='transparent'], rect[style*='pointer-events'], rect:not([fill])",
       ) ?? chart.querySelector("rect");
-    if (meshRect) {
-      await user.hover(meshRect as Element);
-      await waitFor(() => {
-        const tooltipText = document.body.textContent ?? "";
-        expect(tooltipText).toMatch(/%/);
-      });
-    }
+    expect(meshRect).not.toBeNull();
+    await user.hover(meshRect!);
+    const tooltip = await screen.findByTestId("analysis-tooltip");
+    expect(tooltip.textContent).toMatch(/%/);
   });
 
   it("T-LINE-5: データ点ホバー後、ツールチップに x: テキストが表示されない", async () => {
@@ -359,21 +357,13 @@ describe("AnalysisPage", () => {
       chart.querySelector(
         "rect[fill='transparent'], rect[style*='pointer-events'], rect:not([fill])",
       ) ?? chart.querySelector("rect");
-    if (meshRect) {
-      await user.hover(meshRect as Element);
-      await waitFor(() => {
-        const tooltipText = document.body.textContent ?? "";
-        expect(tooltipText).toMatch(/%/);
-      });
-      // x: ラベルがツールチップに含まれないことを確認
-      const tooltips = document.querySelectorAll(
-        "[class*='tooltip'], [data-testid*='tooltip']",
-      );
-      for (const tooltip of tooltips) {
-        expect(tooltip.textContent).not.toMatch(/^x:/);
-        expect(tooltip.textContent).not.toMatch(/x:\s*\d/);
-      }
-    }
+    expect(meshRect).not.toBeNull();
+    await user.hover(meshRect!);
+    const tooltip = await screen.findByTestId("analysis-tooltip");
+    expect(tooltip.textContent).toMatch(/%/);
+    // x: ラベルがツールチップに含まれないことを確認
+    expect(tooltip.textContent).not.toMatch(/^x:/);
+    expect(tooltip.textContent).not.toMatch(/x:\s*\d/);
   });
 
   it("T-RADAR-3: レーダーチャートに6つの日本語ラベルが存在する", async () => {

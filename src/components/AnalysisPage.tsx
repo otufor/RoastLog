@@ -173,6 +173,7 @@ export function AnalysisPage() {
                 useMesh
                 tooltip={({ point }) => (
                   <div
+                    data-testid="analysis-tooltip"
                     style={{
                       background: "var(--card)",
                       border: "1px solid var(--border)",
