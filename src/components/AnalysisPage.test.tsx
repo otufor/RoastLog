@@ -274,4 +274,93 @@ describe("AnalysisPage", () => {
       ).toBeInTheDocument(),
     );
   });
+
+  it("T-LINE-3: X 軸の tick に小数文字列が存在しない", async () => {
+    await db.beans.put(BEAN);
+    await db.roastLogs.put(makeLog({ roastDate: "2025-06-01" }));
+    await db.roastLogs.put(makeLog({ roastDate: "2025-07-01" }));
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    await waitFor(() =>
+      expect(screen.getByTestId("line-chart")).toBeInTheDocument(),
+    );
+    const chart = screen.getByTestId("line-chart");
+    const ticks = await waitFor(() => {
+      const elements = chart.querySelectorAll("svg text");
+      expect(elements.length).toBeGreaterThan(0);
+      return elements;
+    });
+    for (const tick of ticks) {
+      const text = tick.textContent ?? "";
+      // 小数点を含む目盛りテキストが存在しないことを確認
+      expect(text).not.toMatch(/\d+\.\d+/);
+    }
+  });
+
+  // nivo の useMesh ツールチップはブラウザテスト環境で描画されない
+  it.todo(
+    "T-LINE-4: データ点ホバー時にツールチップに % を含む文字列が表示される (nivo useMesh ツールチップはブラウザテスト環境で描画されない)",
+  );
+  it.todo(
+    "T-LINE-5: データ点ホバー後、ツールチップに x: テキストが表示されない (nivo useMesh ツールチップはブラウザテスト環境で描画されない)",
+  );
+
+  it("T-RADAR-3: レーダーチャートに6つの日本語ラベルが存在する", async () => {
+    const log = makeLog({ tasting: TASTING, roastDate: "2025-06-01" });
+    await db.beans.put({ ...BEAN, bestLogId: log.id });
+    await db.roastLogs.put(log);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    await waitFor(() =>
+      expect(screen.getByTestId("radar-chart")).toBeInTheDocument(),
+    );
+    const chart = screen.getByTestId("radar-chart");
+    for (const label of ["甘み", "酸味", "コク", "苦み", "後味", "クリーン"]) {
+      expect(chart.textContent).toContain(label);
+    }
+  });
+
+  it("T-RADAR-4: ラベルを包む <g> の transform 属性値の Set サイズが 6 である", async () => {
+    const log = makeLog({ tasting: TASTING, roastDate: "2025-06-01" });
+    await db.beans.put({ ...BEAN, bestLogId: log.id });
+    await db.roastLogs.put(log);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("combobox", { name: /豆/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("combobox", { name: /豆/ }));
+    await user.click(await screen.findByRole("option", { name: BEAN.name }));
+    await waitFor(() =>
+      expect(screen.getByTestId("radar-chart")).toBeInTheDocument(),
+    );
+    const chart = screen.getByTestId("radar-chart");
+    const labelTexts = ["甘み", "酸味", "コク", "苦み", "後味", "クリーン"];
+    // gridLabel が出力する <g transform="translate(x, y)"> を直接探す
+    // <g> の直接の子が <text> で、そのテキストが日本語ラベルであるものに絞る
+    const labelGs = Array.from(
+      chart.querySelectorAll("g[transform^='translate']"),
+    ).filter((g) => {
+      const children = Array.from(g.children);
+      return children.some(
+        (child) =>
+          child.tagName === "text" &&
+          labelTexts.includes(child.textContent ?? ""),
+      );
+    });
+    const transformValues = new Set(
+      labelGs.map((g) => g.getAttribute("transform") ?? ""),
+    );
+    expect(transformValues.size).toBe(6);
+  });
 });
