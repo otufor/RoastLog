@@ -27,9 +27,8 @@ export function RoastDeviceSettings() {
   const [draft, setDraft] = useState<Draft>(null);
 
   return (
-    <section className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">焙煎機</h2>
         <Button onClick={() => setDraft({ mode: "create" })}>
           焙煎機を追加
         </Button>
@@ -96,7 +95,7 @@ export function RoastDeviceSettings() {
           ))}
         </ul>
       )}
-    </section>
+    </div>
   );
 }
 

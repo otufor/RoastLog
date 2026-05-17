@@ -29,9 +29,8 @@ export function RoastLevelSettings() {
   const [collapsed, setCollapsed] = useState(true);
 
   return (
-    <section className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">焙煎度</h2>
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
@@ -119,7 +118,7 @@ export function RoastLevelSettings() {
           </>
         )}
       </div>
-    </section>
+    </div>
   );
 }
 

@@ -46,9 +46,7 @@ export function CsvSection() {
   }
 
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="text-xl font-semibold">データ管理</h2>
-
+    <div className="flex flex-col gap-4 p-4">
       <div className="flex flex-col gap-2">
         <button
           type="button"
@@ -115,6 +113,6 @@ export function CsvSection() {
         )}
         {success && <p className="text-sm text-green-600">{success}</p>}
       </div>
-    </section>
+    </div>
   );
 }

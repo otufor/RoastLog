@@ -64,9 +64,8 @@ export function LocationSettings() {
     settings.locationLat !== null && settings.locationLon !== null;
 
   return (
-    <section className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">位置情報</h2>
         <Button onClick={handleFetchLocation} disabled={busy}>
           {busy ? "取得中..." : "位置情報を取得する"}
         </Button>
@@ -112,7 +111,7 @@ export function LocationSettings() {
           await update.mutateAsync({ ...settings, locationLabel: label });
         }}
       />
-    </section>
+    </div>
   );
 }
 
