@@ -51,11 +51,53 @@ describe("SettingsPage", () => {
     ]);
   });
 
+  it("「位置情報」セクションが「焙煎度ラベル」セクションより前に表示される", async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: "位置情報" }),
+      ).toBeInTheDocument();
+    });
+    const headings = screen.getAllByRole("heading", { level: 2 });
+    const labels = headings.map((h) => h.textContent);
+    expect(labels.indexOf("位置情報")).toBeLessThan(
+      labels.indexOf("焙煎度ラベル"),
+    );
+  });
+
+  it("5つのセクション見出しが正しい順序で表示される", async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: "位置情報", level: 2 }),
+      ).toBeInTheDocument();
+    });
+    const headings = screen.getAllByRole("heading", { level: 2 });
+    const labels = headings.map((h) => h.textContent);
+    const order = [
+      "位置情報",
+      "焙煎度ラベル",
+      "フレーバータグ",
+      "焙煎機",
+      "データ管理",
+    ];
+    const indices = order.map((label) => labels.indexOf(label));
+    for (const [i, idx] of indices.entries()) {
+      expect(idx, `${order[i]} が見つからない`).toBeGreaterThanOrEqual(0);
+    }
+    for (let i = 0; i < indices.length - 1; i++) {
+      expect(
+        indices[i],
+        `${order[i]} は ${order[i + 1]} より前に表示される必要がある`,
+      ).toBeLessThan(indices[i + 1]);
+    }
+  });
+
   it("3 つのマスター管理セクションを表示する", async () => {
     renderPage();
     await waitFor(() => {
       expect(
-        screen.getByRole("heading", { name: "焙煎度", level: 2 }),
+        screen.getByRole("heading", { name: "焙煎度ラベル", level: 2 }),
       ).toBeInTheDocument();
     });
     expect(

@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { MapPin } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,55 +65,67 @@ export function LocationSettings() {
     settings.locationLat !== null && settings.locationLon !== null;
 
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">位置情報</h2>
-        <Button onClick={handleFetchLocation} disabled={busy}>
-          {busy ? "取得中..." : "位置情報を取得する"}
-        </Button>
-      </div>
-
-      <p className="text-sm text-muted-foreground">
-        焙煎ログ作成時に外気温・湿度・天気を自動取得します。位置情報は端末内（localStorage）にのみ保存されます。
-      </p>
-
-      <div className="rounded-lg border p-3 flex flex-col gap-2">
-        {hasLocation ? (
-          <>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm">
-                {settings.locationLabel || "（場所名なし）"}
-              </span>
-              <Button variant="outline" onClick={handleClearLocation}>
-                位置情報を削除
-              </Button>
-            </div>
-            <div className="text-xs font-mono text-muted-foreground">
-              緯度 {settings.locationLat?.toFixed(4)}, 経度{" "}
+    <div className="flex flex-col gap-3 p-4">
+      {hasLocation ? (
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <MapPin className="size-5" aria-hidden />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="text-sm font-medium">
+              {settings.locationLabel || "（場所名なし）"}
+            </span>
+            <span className="font-mono text-xs text-muted-foreground">
+              {settings.locationLat?.toFixed(4)},{" "}
               {settings.locationLon?.toFixed(4)}
-            </div>
-          </>
-        ) : (
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFetchLocation}
+            disabled={busy}
+          >
+            {busy ? "取得中..." : "再取得"}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-2">
           <p className="text-sm text-muted-foreground">
             位置情報が設定されていません
           </p>
-        )}
+          <Button onClick={handleFetchLocation} disabled={busy} size="sm">
+            {busy ? "取得中..." : "位置情報を取得する"}
+          </Button>
+        </div>
+      )}
 
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
-      </div>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
 
-      <LocationLabelForm
-        key={settings.locationLabel}
-        currentLabel={settings.locationLabel}
-        onSubmit={async (label) => {
-          await update.mutateAsync({ ...settings, locationLabel: label });
-        }}
-      />
-    </section>
+      {hasLocation && (
+        <>
+          <LocationLabelForm
+            key={settings.locationLabel || "__no_label__"}
+            currentLabel={settings.locationLabel}
+            onSubmit={async (label) => {
+              await update.mutateAsync({ ...settings, locationLabel: label });
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="self-start text-muted-foreground"
+            onClick={handleClearLocation}
+          >
+            位置情報を削除
+          </Button>
+        </>
+      )}
+    </div>
   );
 }
 

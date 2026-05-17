@@ -19,6 +19,26 @@ type Draft = { mode: "create" } | { mode: "edit"; device: RoastDevice } | null;
 
 const empty: CreateRoastDeviceInput = { name: "", method: "", note: "" };
 
+function RoastDeviceIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 8h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+      <path d="M7 8V5a2 2 0 012-2h6a2 2 0 012 2v3" />
+      <path d="M12 11v5M9 13l3-2 3 2" />
+    </svg>
+  );
+}
+
 export function RoastDeviceSettings() {
   const { data: devices } = useRoastDevices();
   const create = useCreateRoastDevice();
@@ -27,14 +47,7 @@ export function RoastDeviceSettings() {
   const [draft, setDraft] = useState<Draft>(null);
 
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">焙煎機</h2>
-        <Button onClick={() => setDraft({ mode: "create" })}>
-          焙煎機を追加
-        </Button>
-      </div>
-
+    <div className="flex flex-col gap-3 p-4">
       {draft && (
         <div
           role="dialog"
@@ -67,36 +80,49 @@ export function RoastDeviceSettings() {
           {devices?.map((device) => (
             <li
               key={device.id}
-              className="flex flex-col gap-1 rounded-lg border p-3"
+              className="flex items-center gap-3 rounded-lg border p-3"
             >
-              <div className="flex items-center gap-2">
-                <span className="flex-1 font-medium">{device.name}</span>
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-secondary-foreground">
+                <RoastDeviceIcon />
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="text-sm font-medium">{device.name}</span>
                 {device.method && (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {device.method}
                   </span>
                 )}
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary"
                   onClick={() => setDraft({ mode: "edit", device })}
                 >
                   編集
                 </Button>
                 <Button
                   variant="destructive"
+                  size="sm"
                   onClick={() => del.mutate(device.id)}
                 >
                   削除
                 </Button>
               </div>
-              {device.note && (
-                <p className="text-sm text-muted-foreground">{device.note}</p>
-              )}
             </li>
           ))}
         </ul>
       )}
-    </section>
+
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => setDraft({ mode: "create" })}
+      >
+        焙煎機を追加
+      </Button>
+    </div>
   );
 }
 

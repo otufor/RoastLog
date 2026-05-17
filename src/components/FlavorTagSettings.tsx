@@ -1,5 +1,4 @@
 import { useForm } from "@tanstack/react-form";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,117 +19,115 @@ type Draft = { mode: "create" } | { mode: "edit"; tag: FlavorTag } | null;
 
 const empty: CreateFlavorTagInput = { name: "", color: "#F9A8D4" };
 
+/** Returns whether a hex color (#rrggbb) is perceptually light. */
+function isLightColor(hex: string): boolean {
+  const r = Number.parseInt(hex.slice(1, 3), 16);
+  const g = Number.parseInt(hex.slice(3, 5), 16);
+  const b = Number.parseInt(hex.slice(5, 7), 16);
+  // Relative luminance (simplified)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55;
+}
+
 export function FlavorTagSettings() {
   const { data: tags } = useFlavorTags();
   const create = useCreateFlavorTag();
   const update = useUpdateFlavorTag();
   const del = useDeleteFlavorTag();
   const [draft, setDraft] = useState<Draft>(null);
-  const [collapsed, setCollapsed] = useState(true);
 
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">フレーバータグ</h2>
-        <button
-          type="button"
-          onClick={() => setCollapsed((c) => !c)}
-          aria-expanded={!collapsed}
-          aria-controls="flavor-tag-content"
-          aria-label={
-            collapsed ? "フレーバータグを展開" : "フレーバータグを折りたたむ"
-          }
-          className="rounded p-1 hover:bg-muted"
+    <div className="flex flex-col gap-3 p-4">
+      {draft && (
+        <div
+          role="dialog"
+          aria-labelledby="flavor-tag-dialog-title"
+          className="rounded-lg border bg-muted/30 p-4"
         >
-          {collapsed ? (
-            <ChevronDown className="h-5 w-5" />
-          ) : (
-            <ChevronUp className="h-5 w-5" />
-          )}
-        </button>
-      </div>
-
-      <div id="flavor-tag-content">
-        {!collapsed && (
-          <>
-            <Button onClick={() => setDraft({ mode: "create" })}>
-              フレーバータグを追加
-            </Button>
-
-            {draft && (
-              <div
-                role="dialog"
-                aria-labelledby="flavor-tag-dialog-title"
-                className="rounded-lg border bg-muted/30 p-4"
-              >
-                <h3 id="flavor-tag-dialog-title" className="mb-3 font-medium">
-                  {draft.mode === "edit"
-                    ? "フレーバータグを編集"
-                    : "フレーバータグを追加"}
-                </h3>
-                <FlavorTagForm
-                  key={draft.mode === "edit" ? draft.tag.id : "new"}
-                  defaultValues={draft.mode === "edit" ? draft.tag : empty}
-                  onSubmit={async (input) => {
-                    if (draft.mode === "edit") {
-                      await update.mutateAsync({ ...draft.tag, ...input });
-                    } else {
-                      await create.mutateAsync(input);
-                    }
+          <h3 id="flavor-tag-dialog-title" className="mb-3 font-medium">
+            {draft.mode === "edit"
+              ? "フレーバータグを編集"
+              : "フレーバータグを追加"}
+          </h3>
+          <FlavorTagForm
+            key={draft.mode === "edit" ? draft.tag.id : "new"}
+            defaultValues={draft.mode === "edit" ? draft.tag : empty}
+            onSubmit={async (input) => {
+              if (draft.mode === "edit") {
+                await update.mutateAsync({ ...draft.tag, ...input });
+              } else {
+                await create.mutateAsync(input);
+              }
+              setDraft(null);
+            }}
+            onDelete={
+              draft.mode === "edit"
+                ? async () => {
+                    await del.mutateAsync(draft.tag.id);
                     setDraft(null);
-                  }}
-                  onCancel={() => setDraft(null)}
-                />
-              </div>
-            )}
+                  }
+                : undefined
+            }
+            onCancel={() => setDraft(null)}
+          />
+        </div>
+      )}
 
-            {tags?.length === 0 ? (
-              <p className="text-muted-foreground">
-                フレーバータグが登録されていません
-              </p>
-            ) : (
-              <ul className="flex flex-col gap-2">
-                {tags?.map((tag) => (
-                  <li
-                    key={tag.id}
-                    className="flex items-center gap-3 rounded-lg border p-3"
-                  >
-                    <span
-                      aria-hidden
-                      className="inline-block h-4 w-4 rounded-full"
-                      style={{ background: tag.color }}
-                    />
-                    <span className="flex-1">{tag.name}</span>
-                    <Button
-                      variant="outline"
-                      onClick={() => setDraft({ mode: "edit", tag })}
-                    >
-                      編集
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => del.mutate(tag.id)}
-                    >
-                      削除
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </div>
-    </section>
+      {tags?.length === 0 ? (
+        <p className="text-muted-foreground">
+          フレーバータグが登録されていません
+        </p>
+      ) : (
+        <ul className="flex flex-wrap gap-2">
+          {tags?.map((tag) => {
+            const fg = isLightColor(tag.color) ? "#1a1a1a" : "#ffffff";
+            const borderColor = `${fg}55`;
+            return (
+              <li key={tag.id}>
+                <button
+                  type="button"
+                  onClick={() => setDraft({ mode: "edit", tag })}
+                  aria-label={`${tag.name} を編集`}
+                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-80"
+                  style={{
+                    backgroundColor: tag.color,
+                    color: fg,
+                    borderColor,
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    className="inline-block h-2 w-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: fg }}
+                  />
+                  {tag.name}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setDraft({ mode: "create" })}
+      >
+        + フレーバータグを追加
+      </Button>
+    </div>
   );
 }
 
 function FlavorTagForm({
   defaultValues,
   onSubmit,
+  onDelete,
   onCancel,
 }: {
   defaultValues: CreateFlavorTagInput;
   onSubmit: (input: CreateFlavorTagInput) => void | Promise<void>;
+  onDelete?: () => void | Promise<void>;
   onCancel: () => void;
 }) {
   const form = useForm({
@@ -195,11 +192,18 @@ function FlavorTagForm({
           </div>
         )}
       </form.Field>
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          キャンセル
-        </Button>
-        <Button type="submit">保存</Button>
+      <div className="flex justify-between gap-2">
+        {onDelete && (
+          <Button type="button" variant="destructive" onClick={onDelete}>
+            削除
+          </Button>
+        )}
+        <div className="flex gap-2 ml-auto">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            キャンセル
+          </Button>
+          <Button type="submit">保存</Button>
+        </div>
       </div>
     </form>
   );
