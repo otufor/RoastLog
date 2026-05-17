@@ -156,4 +156,46 @@ describe("RoastLevelSettings", () => {
       expect(screen.queryByText("中煎り")).not.toBeInTheDocument(),
     );
   });
+
+  describe("折りたたみプレビュー", () => {
+    it("折りたたみ状態でカラードットが表示される", async () => {
+      await db.roastLevels.bulkAdd([
+        { id: "a", label: "浅煎り", color: "#E8C84A", order: 1 },
+        { id: "b", label: "深煎り", color: "#3E1A06", order: 5 },
+      ]);
+
+      renderSection();
+
+      // デフォルトは折りたたみ状態 — カラードットが表示されるはず
+      const dots = await screen.findAllByTestId("color-dot");
+      expect(dots).toHaveLength(2);
+      // inline style の background は background-color として展開される
+      expect(dots[0]).toHaveStyle("background-color: #E8C84A");
+      expect(dots[1]).toHaveStyle("background-color: #3E1A06");
+    });
+
+    it("折りたたみ状態で件数ラベルが表示される", async () => {
+      await db.roastLevels.bulkAdd([
+        { id: "a", label: "浅煎り", color: "#E8C84A", order: 1 },
+        { id: "b", label: "中煎り", color: "#B06B1E", order: 3 },
+        { id: "c", label: "深煎り", color: "#3E1A06", order: 5 },
+      ]);
+
+      renderSection();
+
+      // デフォルトは折りたたみ状態 — 件数ラベルが表示されるはず
+      await waitFor(() => expect(screen.getByText("3 件")).toBeInTheDocument());
+    });
+
+    it("焙煎度がない場合は折りたたみ状態でドットと件数が表示されない", async () => {
+      renderSection();
+
+      // 0件の場合は件数ラベルなし
+      expect(
+        screen.getByRole("button", { name: "焙煎度を展開" }),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/\d+ 件/)).not.toBeInTheDocument();
+      expect(screen.queryByTestId("color-dot")).not.toBeInTheDocument();
+    });
+  });
 });

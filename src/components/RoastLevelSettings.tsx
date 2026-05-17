@@ -37,13 +37,33 @@ export function RoastLevelSettings() {
           aria-expanded={!collapsed}
           aria-controls="roast-level-content"
           aria-label={collapsed ? "焙煎度を展開" : "焙煎度を折りたたむ"}
-          className="rounded p-1 hover:bg-muted"
+          className="flex flex-1 items-center gap-2 rounded p-1 hover:bg-muted"
         >
-          {collapsed ? (
-            <ChevronDown className="h-5 w-5" />
-          ) : (
-            <ChevronUp className="h-5 w-5" />
+          {collapsed && levels && levels.length > 0 && (
+            <>
+              <span className="flex items-center gap-1">
+                {levels.map((level) => (
+                  <span
+                    key={level.id}
+                    data-testid="color-dot"
+                    aria-hidden
+                    className="inline-block h-2 w-2 rounded-full"
+                    style={{ background: level.color }}
+                  />
+                ))}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {levels.length} 件
+              </span>
+            </>
           )}
+          <span className="ml-auto">
+            {collapsed ? (
+              <ChevronDown className="h-5 w-5" />
+            ) : (
+              <ChevronUp className="h-5 w-5" />
+            )}
+          </span>
         </button>
       </div>
 

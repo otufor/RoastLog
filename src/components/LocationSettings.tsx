@@ -6,6 +6,25 @@ import { Label } from "@/components/ui/label";
 import { useAppSettings, useUpdateAppSettings } from "@/hooks/useAppSettings";
 import { AppSettingsSchema } from "@/schemas/appSettings";
 
+function PinIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-5"
+      aria-hidden="true"
+    >
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
 export function LocationSettings() {
   const { data: settings, isLoading } = useAppSettings();
   const update = useUpdateAppSettings();
@@ -65,52 +84,65 @@ export function LocationSettings() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <div className="flex items-center justify-between">
-        <Button onClick={handleFetchLocation} disabled={busy}>
-          {busy ? "取得中..." : "位置情報を取得する"}
-        </Button>
-      </div>
-
-      <p className="text-sm text-muted-foreground">
-        焙煎ログ作成時に外気温・湿度・天気を自動取得します。位置情報は端末内（localStorage）にのみ保存されます。
-      </p>
-
-      <div className="rounded-lg border p-3 flex flex-col gap-2">
-        {hasLocation ? (
-          <>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm">
-                {settings.locationLabel || "（場所名なし）"}
-              </span>
-              <Button variant="outline" onClick={handleClearLocation}>
-                位置情報を削除
-              </Button>
-            </div>
-            <div className="text-xs font-mono text-muted-foreground">
-              緯度 {settings.locationLat?.toFixed(4)}, 経度{" "}
+      {hasLocation ? (
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <PinIcon />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="text-sm font-medium">
+              {settings.locationLabel || "（場所名なし）"}
+            </span>
+            <span className="font-mono text-xs text-muted-foreground">
+              {settings.locationLat?.toFixed(4)},{" "}
               {settings.locationLon?.toFixed(4)}
-            </div>
-          </>
-        ) : (
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFetchLocation}
+            disabled={busy}
+          >
+            {busy ? "取得中..." : "再取得"}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-2">
           <p className="text-sm text-muted-foreground">
             位置情報が設定されていません
           </p>
-        )}
+          <Button onClick={handleFetchLocation} disabled={busy} size="sm">
+            {busy ? "取得中..." : "位置情報を取得する"}
+          </Button>
+        </div>
+      )}
 
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
-      </div>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
 
-      <LocationLabelForm
-        key={settings.locationLabel}
-        currentLabel={settings.locationLabel}
-        onSubmit={async (label) => {
-          await update.mutateAsync({ ...settings, locationLabel: label });
-        }}
-      />
+      {hasLocation && (
+        <>
+          <LocationLabelForm
+            key={settings.locationLabel}
+            currentLabel={settings.locationLabel}
+            onSubmit={async (label) => {
+              await update.mutateAsync({ ...settings, locationLabel: label });
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="self-start text-muted-foreground"
+            onClick={handleClearLocation}
+          >
+            位置情報を削除
+          </Button>
+        </>
+      )}
     </div>
   );
 }
