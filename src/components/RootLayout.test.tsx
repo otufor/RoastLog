@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
   createRoute,
@@ -18,7 +19,12 @@ function renderRoot() {
     routeTree: RootRoute.addChildren([indexRoute]),
     history: createMemoryHistory({ initialEntries: ["/"] }),
   });
-  return render(<RouterProvider router={router} />);
+  const qc = new QueryClient();
+  return render(
+    <QueryClientProvider client={qc}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
 }
 
 describe("RootLayout", () => {

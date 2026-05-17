@@ -30,7 +30,7 @@ export function StarRating({ value, max = 5, size = 16, onChange }: Props) {
                 border: 0,
                 padding: 0,
                 cursor: "pointer",
-                color: filled ? "#D4943A" : "var(--border)",
+                color: filled ? "#D4943A" : "var(--muted-foreground)",
                 fontSize: size,
                 lineHeight: 1,
                 minWidth: 44,
@@ -50,7 +50,7 @@ export function StarRating({ value, max = 5, size = 16, onChange }: Props) {
             key={i}
             aria-hidden="true"
             style={{
-              color: filled ? "#D4943A" : "var(--border)",
+              color: filled ? "#D4943A" : "var(--muted-foreground)",
               fontSize: size,
               lineHeight: 1,
             }}

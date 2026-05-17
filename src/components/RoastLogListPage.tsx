@@ -167,7 +167,7 @@ export function RoastLogListPage() {
                 fontSize: 12,
                 fontWeight: 500,
                 background: active ? "var(--foreground)" : "var(--card)",
-                color: active ? "#FFFFFF" : "var(--muted-foreground)",
+                color: active ? "var(--background)" : "var(--muted-foreground)",
                 border: active
                   ? "0.5px solid var(--foreground)"
                   : "0.5px solid var(--border)",
@@ -408,7 +408,7 @@ export function RoastLogListPage() {
                   borderRadius: 10,
                   padding: 12,
                   boxShadow:
-                    "0 1px 2px rgba(28,23,20,0.04), 0 1px 1px rgba(28,23,20,0.03)",
+                    "0 1px 2px rgba(0,0,0,0.06), 0 1px 1px rgba(0,0,0,0.04)",
                   cursor: "pointer",
                   textAlign: "left",
                   width: "100%",
@@ -440,7 +440,7 @@ export function RoastLogListPage() {
                         fontWeight: 500,
                         padding: "3px 8px",
                         borderRadius: 999,
-                        background: "#FDEAEA",
+                        background: "rgba(184,50,50,0.12)",
                         color: "#B83232",
                         flexShrink: 0,
                       }}
@@ -489,7 +489,7 @@ export function RoastLogListPage() {
                         fontWeight: 500,
                         padding: "3px 8px",
                         borderRadius: 999,
-                        background: "#E0F2E9",
+                        background: "rgba(45,125,82,0.12)",
                         color: "#2D7D52",
                       }}
                     >
@@ -535,7 +535,7 @@ export function RoastLogListPage() {
             justifyContent: "center",
             gap: 8,
             boxShadow:
-              "0 4px 12px rgba(176,107,30,0.28), 0 2px 4px rgba(28,23,20,0.08)",
+              "0 4px 12px rgba(176,107,30,0.28), 0 2px 4px rgba(0,0,0,0.10)",
           }}
         >
           <svg

@@ -26,16 +26,11 @@ const RADAR_KEYS_JP: Record<string, string> = {
   cleanliness: "クリーン",
 };
 
-const COLOR_1 = "#2D7D52";
-const COLOR_2 = "#B06B1E";
+const COLOR_1 = "#10B981";
+const COLOR_2 = "#F97316";
 
-const tooltipStyle = {
-  background: "var(--card)",
-  border: "1px solid var(--border)",
-  borderRadius: 6,
-  padding: "6px 10px",
-  fontSize: 13,
-} as const;
+const TOOLTIP_CLASS =
+  "bg-card text-card-foreground border border-border rounded-sm px-2.5 py-1.5 text-[13px]";
 
 const emptyMessageStyle = {
   fontSize: 13,
@@ -124,6 +119,7 @@ export function AnalysisPage() {
   ];
   const radarData =
     radarEntries.length > 0 ? buildRadarChartData(radarEntries) : null;
+  const radarKeys = radarEntries.map((e) => e.label);
 
   return (
     <div className="p-4 flex flex-col gap-8">
@@ -170,6 +166,7 @@ export function AnalysisPage() {
                 xScale={{ type: "linear" }}
                 yScale={{ type: "linear", stacked: false }}
                 yFormat=">-.1f"
+                theme={{ text: { fill: "currentColor" } }}
                 axisBottom={{
                   legend: "焙煎回数",
                   legendOffset: 32,
@@ -178,7 +175,7 @@ export function AnalysisPage() {
                 axisLeft={{ legend: "減少率 (%)", legendOffset: -40 }}
                 useMesh
                 tooltip={({ point }) => (
-                  <div data-testid="analysis-tooltip" style={tooltipStyle}>
+                  <div data-testid="analysis-tooltip" className={TOOLTIP_CLASS}>
                     {point.data.yFormatted}%
                   </div>
                 )}
@@ -264,12 +261,12 @@ export function AnalysisPage() {
           <div data-testid="radar-chart" style={{ height: 350 }}>
             <ResponsiveRadar
               data={radarData}
-              keys={["ログ1", "ログ2"]}
+              keys={radarKeys}
               indexBy="metric"
               valueFormat=">-.1f"
               maxValue={5}
               colors={[COLOR_1, COLOR_2]}
-              fillOpacity={0.3}
+              fillOpacity={0.4}
               margin={{ top: 40, right: 60, bottom: 40, left: 60 }}
               gridLabelOffset={16}
               gridLabel={({ id, anchor, x, y }) => (
@@ -278,10 +275,31 @@ export function AnalysisPage() {
                     textAnchor={anchor}
                     dominantBaseline="central"
                     fontSize={12}
+                    fill="currentColor"
                   >
                     {RADAR_KEYS_JP[id] ?? id}
                   </text>
                 </g>
+              )}
+              sliceTooltip={({ index, data }) => (
+                <div className={TOOLTIP_CLASS}>
+                  <div className="font-semibold mb-1">
+                    {RADAR_KEYS_JP[String(index)] ?? String(index)}
+                  </div>
+                  {data.map((d) => (
+                    <div
+                      key={String(d.id)}
+                      className="flex items-center gap-1.5"
+                    >
+                      <span
+                        className="inline-block w-2.5 h-2.5 rounded-sm shrink-0"
+                        style={{ background: d.color }}
+                      />
+                      <span>{String(d.id)}</span>
+                      <span className="ml-auto pl-3">{d.formattedValue}</span>
+                    </div>
+                  ))}
+                </div>
               )}
             />
           </div>
