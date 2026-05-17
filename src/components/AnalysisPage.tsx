@@ -37,6 +37,13 @@ const tooltipStyle = {
   fontSize: 13,
 } as const;
 
+const emptyMessageStyle = {
+  fontSize: 13,
+  color: "var(--muted-foreground)",
+  padding: "24px 0",
+  textAlign: "center",
+} as const;
+
 function defaultSelector1Id(
   bean: Bean | null,
   beanLogs: RoastLog[],
@@ -154,16 +161,7 @@ export function AnalysisPage() {
         <h2 className="text-lg font-semibold">重量減少率の推移</h2>
         {selectedBeanId !== null &&
           (beanLogs.length === 0 ? (
-            <p
-              style={{
-                fontSize: 13,
-                color: "var(--muted-foreground)",
-                padding: "24px 0",
-                textAlign: "center",
-              }}
-            >
-              まだ焙煎ログがありません
-            </p>
+            <p style={emptyMessageStyle}>まだ焙煎ログがありません</p>
           ) : (
             <div data-testid="line-chart" style={{ height: 300 }}>
               <ResponsiveLine
