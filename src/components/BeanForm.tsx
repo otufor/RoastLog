@@ -160,7 +160,7 @@ export function BeanForm({
                 height: 44,
                 padding: "0 12px",
                 background: "var(--muted)",
-                border: `0.5px solid ${field.state.meta.errors.length > 0 ? "#B83232" : "var(--border)"}`,
+                border: `0.5px solid ${field.state.meta.errors.length > 0 ? "var(--destructive)" : "var(--border)"}`,
                 borderRadius: 8,
                 fontSize: 14,
                 color: "var(--foreground)",
@@ -175,7 +175,7 @@ export function BeanForm({
                   role="alert"
                   style={{
                     fontSize: 12,
-                    color: "#B83232",
+                    color: "var(--destructive)",
                     marginTop: 4,
                     display: "block",
                   }}
