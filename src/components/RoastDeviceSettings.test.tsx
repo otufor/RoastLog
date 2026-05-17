@@ -96,6 +96,27 @@ describe("RoastDeviceSettings", () => {
     expect(await db.roastDevices.count()).toBe(0);
   });
 
+  it("「焙煎機を追加」ボタンがデバイスリストの後に表示される", async () => {
+    await db.roastDevices.add({
+      id: "order-test",
+      name: "Test Roaster",
+      method: "熱風式",
+      note: "",
+    });
+    renderSection();
+    await waitFor(() =>
+      expect(screen.getByText("Test Roaster")).toBeInTheDocument(),
+    );
+
+    const addButton = screen.getByRole("button", { name: "焙煎機を追加" });
+    const listItem = screen.getByRole("listitem");
+    // addButton は listitem より後（DOM順）に来るべき
+    expect(
+      addButton.compareDocumentPosition(listItem) &
+        Node.DOCUMENT_POSITION_PRECEDING,
+    ).toBeTruthy();
+  });
+
   it("「削除」ボタンで消える", async () => {
     await db.roastDevices.add({
       id: "x",
