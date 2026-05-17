@@ -135,10 +135,13 @@ describe("FlavorTagSettings", () => {
     await waitFor(() => expect(screen.getByText("ベリー")).toBeInTheDocument());
     expect(screen.getByText("シトラス")).toBeInTheDocument();
 
-    // 各ピルに aria-hidden な色ドットが含まれる
-    const dots = document.querySelectorAll(
-      "[aria-hidden='true'][class*='rounded-full']",
-    );
-    expect(dots.length).toBeGreaterThanOrEqual(2);
+    const berryPill = screen.getByRole("button", { name: "ベリー を編集" });
+    const citrusPill = screen.getByRole("button", { name: "シトラス を編集" });
+    expect(
+      berryPill.querySelector("[aria-hidden='true'][class*='rounded-full']"),
+    ).not.toBeNull();
+    expect(
+      citrusPill.querySelector("[aria-hidden='true'][class*='rounded-full']"),
+    ).not.toBeNull();
   });
 });
