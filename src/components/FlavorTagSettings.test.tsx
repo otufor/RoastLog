@@ -14,12 +14,6 @@ function renderSection() {
   );
 }
 
-async function expand() {
-  await userEvent.click(
-    screen.getByRole("button", { name: "フレーバータグを展開" }),
-  );
-}
-
 describe("FlavorTagSettings", () => {
   beforeEach(async () => {
     await Promise.all([
@@ -31,38 +25,6 @@ describe("FlavorTagSettings", () => {
     ]);
   });
 
-  it("デフォルトで折りたたまれており、リストと追加ボタンが非表示", () => {
-    renderSection();
-    expect(
-      screen.queryByRole("button", { name: "フレーバータグを追加" }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "フレーバータグを展開" }),
-    ).toHaveAttribute("aria-expanded", "false");
-  });
-
-  it("展開ボタンをクリックするとコンテンツが表示される", async () => {
-    renderSection();
-    await expand();
-    expect(
-      screen.getByRole("button", { name: "フレーバータグを追加" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "フレーバータグを折りたたむ" }),
-    ).toHaveAttribute("aria-expanded", "true");
-  });
-
-  it("展開後に再クリックすると折りたたまれる", async () => {
-    renderSection();
-    await expand();
-    await userEvent.click(
-      screen.getByRole("button", { name: "フレーバータグを折りたたむ" }),
-    );
-    expect(
-      screen.queryByRole("button", { name: "フレーバータグを追加" }),
-    ).not.toBeInTheDocument();
-  });
-
   it("登録済み FlavorTag を一覧表示する", async () => {
     await db.flavorTags.add({
       id: "a",
@@ -70,7 +32,6 @@ describe("FlavorTagSettings", () => {
       color: "#F9A8D4",
     });
     renderSection();
-    await expand();
     await waitFor(() =>
       expect(screen.getByText("フローラル")).toBeInTheDocument(),
     );
@@ -79,10 +40,9 @@ describe("FlavorTagSettings", () => {
   it("「追加」ボタンから新規作成できる", async () => {
     const user = userEvent.setup();
     renderSection();
-    await expand();
 
     await user.click(
-      screen.getByRole("button", { name: "フレーバータグを追加" }),
+      screen.getByRole("button", { name: "+ フレーバータグを追加" }),
     );
 
     const dialog = await screen.findByRole("dialog");
@@ -99,7 +59,6 @@ describe("FlavorTagSettings", () => {
 
     const user = userEvent.setup();
     renderSection();
-    await expand();
     await waitFor(() =>
       expect(screen.getByText("フローラル")).toBeInTheDocument(),
     );
@@ -122,10 +81,9 @@ describe("FlavorTagSettings", () => {
   it("名前が空の場合は保存されない", async () => {
     const user = userEvent.setup();
     renderSection();
-    await expand();
 
     await user.click(
-      screen.getByRole("button", { name: "フレーバータグを追加" }),
+      screen.getByRole("button", { name: "+ フレーバータグを追加" }),
     );
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "保存" }));
@@ -143,7 +101,6 @@ describe("FlavorTagSettings", () => {
 
     const user = userEvent.setup();
     renderSection();
-    await expand();
     await waitFor(() => expect(screen.getByText("ナッツ")).toBeInTheDocument());
 
     const item = screen.getByRole("listitem");
@@ -152,5 +109,36 @@ describe("FlavorTagSettings", () => {
     await waitFor(() =>
       expect(screen.queryByText("ナッツ")).not.toBeInTheDocument(),
     );
+  });
+
+  it("タグは折りたたみなしで常時ピルとして表示される（展開ボタンがない）", async () => {
+    await db.flavorTags.add({
+      id: "p1",
+      name: "フローラル",
+      color: "#F9A8D4",
+    });
+    renderSection();
+    await waitFor(() =>
+      expect(screen.getByText("フローラル")).toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByRole("button", { name: /展開|開く|折りたたみ/u }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("各ピルにタグ名と色ドットが表示される", async () => {
+    await Promise.all([
+      db.flavorTags.add({ id: "c1", name: "ベリー", color: "#C4B5FD" }),
+      db.flavorTags.add({ id: "c2", name: "シトラス", color: "#86EFAC" }),
+    ]);
+    renderSection();
+    await waitFor(() => expect(screen.getByText("ベリー")).toBeInTheDocument());
+    expect(screen.getByText("シトラス")).toBeInTheDocument();
+
+    // 各ピルに aria-hidden な色ドットが含まれる
+    const dots = document.querySelectorAll(
+      "[aria-hidden='true'][class*='rounded-full']",
+    );
+    expect(dots.length).toBeGreaterThanOrEqual(2);
   });
 });
