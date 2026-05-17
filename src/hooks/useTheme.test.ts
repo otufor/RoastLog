@@ -34,8 +34,9 @@ describe("useTheme", () => {
     vi.spyOn(window, "matchMedia").mockReturnValue(
       mq as unknown as MediaQueryList,
     );
-    renderHook(() => useTheme());
+    const { unmount } = renderHook(() => useTheme());
     expect(document.documentElement.classList.contains("dark")).toBe(true);
+    unmount();
   });
 
   it("ライトモード設定時 .dark クラスが付かない", () => {
@@ -43,8 +44,9 @@ describe("useTheme", () => {
     vi.spyOn(window, "matchMedia").mockReturnValue(
       mq as unknown as MediaQueryList,
     );
-    renderHook(() => useTheme());
+    const { unmount } = renderHook(() => useTheme());
     expect(document.documentElement.classList.contains("dark")).toBe(false);
+    unmount();
   });
 
   it("設定変更で .dark クラスがリロードなしに切り替わる", () => {
@@ -52,7 +54,7 @@ describe("useTheme", () => {
     vi.spyOn(window, "matchMedia").mockReturnValue(
       mq as unknown as MediaQueryList,
     );
-    renderHook(() => useTheme());
+    const { unmount } = renderHook(() => useTheme());
 
     expect(document.documentElement.classList.contains("dark")).toBe(false);
 
@@ -61,5 +63,7 @@ describe("useTheme", () => {
 
     act(() => mq.fire(false));
     expect(document.documentElement.classList.contains("dark")).toBe(false);
+
+    unmount();
   });
 });
