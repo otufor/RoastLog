@@ -14,6 +14,12 @@ function renderSection() {
   );
 }
 
+async function expand() {
+  await userEvent.click(
+    screen.getByRole("button", { name: "フレーバータグを展開" }),
+  );
+}
+
 describe("FlavorTagSettings", () => {
   beforeEach(async () => {
     await Promise.all([
@@ -25,6 +31,38 @@ describe("FlavorTagSettings", () => {
     ]);
   });
 
+  it("デフォルトで折りたたまれており、リストと追加ボタンが非表示", () => {
+    renderSection();
+    expect(
+      screen.queryByRole("button", { name: "フレーバータグを追加" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "フレーバータグを展開" }),
+    ).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("展開ボタンをクリックするとコンテンツが表示される", async () => {
+    renderSection();
+    await expand();
+    expect(
+      screen.getByRole("button", { name: "フレーバータグを追加" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "フレーバータグを折りたたむ" }),
+    ).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("展開後に再クリックすると折りたたまれる", async () => {
+    renderSection();
+    await expand();
+    await userEvent.click(
+      screen.getByRole("button", { name: "フレーバータグを折りたたむ" }),
+    );
+    expect(
+      screen.queryByRole("button", { name: "フレーバータグを追加" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("登録済み FlavorTag を一覧表示する", async () => {
     await db.flavorTags.add({
       id: "a",
@@ -32,6 +70,7 @@ describe("FlavorTagSettings", () => {
       color: "#F9A8D4",
     });
     renderSection();
+    await expand();
     await waitFor(() =>
       expect(screen.getByText("フローラル")).toBeInTheDocument(),
     );
@@ -40,6 +79,7 @@ describe("FlavorTagSettings", () => {
   it("「追加」ボタンから新規作成できる", async () => {
     const user = userEvent.setup();
     renderSection();
+    await expand();
 
     await user.click(
       screen.getByRole("button", { name: "フレーバータグを追加" }),
@@ -59,6 +99,7 @@ describe("FlavorTagSettings", () => {
 
     const user = userEvent.setup();
     renderSection();
+    await expand();
     await waitFor(() =>
       expect(screen.getByText("フローラル")).toBeInTheDocument(),
     );
@@ -81,6 +122,7 @@ describe("FlavorTagSettings", () => {
   it("名前が空の場合は保存されない", async () => {
     const user = userEvent.setup();
     renderSection();
+    await expand();
 
     await user.click(
       screen.getByRole("button", { name: "フレーバータグを追加" }),
@@ -101,6 +143,7 @@ describe("FlavorTagSettings", () => {
 
     const user = userEvent.setup();
     renderSection();
+    await expand();
     await waitFor(() => expect(screen.getByText("ナッツ")).toBeInTheDocument());
 
     const item = screen.getByRole("listitem");
