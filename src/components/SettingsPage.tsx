@@ -3,6 +3,7 @@ import { FlavorTagSettings } from "@/components/FlavorTagSettings";
 import { LocationSettings } from "@/components/LocationSettings";
 import { RoastDeviceSettings } from "@/components/RoastDeviceSettings";
 import { RoastLevelSettings } from "@/components/RoastLevelSettings";
+import { ThemeSettings } from "@/components/ThemeSettings";
 
 function SettingsSection({
   label,
@@ -27,6 +28,9 @@ export function SettingsPage() {
   return (
     <div className="flex flex-col gap-6 p-4">
       <h1 className="py-2 text-xl font-semibold">設定</h1>
+      <SettingsSection label="外観">
+        <ThemeSettings />
+      </SettingsSection>
       <SettingsSection label="位置情報">
         <LocationSettings />
       </SettingsSection>

@@ -1,9 +1,11 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { BottomTabBar } from "@/components/BottomTabBar";
+import { useAppSettings } from "@/hooks/useAppSettings";
 import { useTheme } from "@/hooks/useTheme";
 
 function RootComponent() {
-  useTheme();
+  const { data: settings } = useAppSettings();
+  useTheme(settings?.theme ?? "system");
   return (
     <div
       style={{
