@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,73 +26,100 @@ export function FlavorTagSettings() {
   const update = useUpdateFlavorTag();
   const del = useDeleteFlavorTag();
   const [draft, setDraft] = useState<Draft>(null);
+  const [collapsed, setCollapsed] = useState(true);
 
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">フレーバータグ</h2>
-        <Button onClick={() => setDraft({ mode: "create" })}>
-          フレーバータグを追加
-        </Button>
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          aria-controls="flavor-tag-content"
+          aria-label={
+            collapsed ? "フレーバータグを展開" : "フレーバータグを折りたたむ"
+          }
+          className="rounded p-1 hover:bg-muted"
+        >
+          {collapsed ? (
+            <ChevronDown className="h-5 w-5" />
+          ) : (
+            <ChevronUp className="h-5 w-5" />
+          )}
+        </button>
       </div>
 
-      {draft && (
-        <div
-          role="dialog"
-          aria-labelledby="flavor-tag-dialog-title"
-          className="rounded-lg border bg-muted/30 p-4"
-        >
-          <h3 id="flavor-tag-dialog-title" className="mb-3 font-medium">
-            {draft.mode === "edit"
-              ? "フレーバータグを編集"
-              : "フレーバータグを追加"}
-          </h3>
-          <FlavorTagForm
-            key={draft.mode === "edit" ? draft.tag.id : "new"}
-            defaultValues={draft.mode === "edit" ? draft.tag : empty}
-            onSubmit={async (input) => {
-              if (draft.mode === "edit") {
-                await update.mutateAsync({ ...draft.tag, ...input });
-              } else {
-                await create.mutateAsync(input);
-              }
-              setDraft(null);
-            }}
-            onCancel={() => setDraft(null)}
-          />
-        </div>
-      )}
+      <div id="flavor-tag-content">
+        {!collapsed && (
+          <>
+            <Button onClick={() => setDraft({ mode: "create" })}>
+              フレーバータグを追加
+            </Button>
 
-      {tags?.length === 0 ? (
-        <p className="text-muted-foreground">
-          フレーバータグが登録されていません
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {tags?.map((tag) => (
-            <li
-              key={tag.id}
-              className="flex items-center gap-3 rounded-lg border p-3"
-            >
-              <span
-                aria-hidden
-                className="inline-block h-4 w-4 rounded-full"
-                style={{ background: tag.color }}
-              />
-              <span className="flex-1">{tag.name}</span>
-              <Button
-                variant="outline"
-                onClick={() => setDraft({ mode: "edit", tag })}
+            {draft && (
+              <div
+                role="dialog"
+                aria-labelledby="flavor-tag-dialog-title"
+                className="rounded-lg border bg-muted/30 p-4"
               >
-                編集
-              </Button>
-              <Button variant="destructive" onClick={() => del.mutate(tag.id)}>
-                削除
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+                <h3 id="flavor-tag-dialog-title" className="mb-3 font-medium">
+                  {draft.mode === "edit"
+                    ? "フレーバータグを編集"
+                    : "フレーバータグを追加"}
+                </h3>
+                <FlavorTagForm
+                  key={draft.mode === "edit" ? draft.tag.id : "new"}
+                  defaultValues={draft.mode === "edit" ? draft.tag : empty}
+                  onSubmit={async (input) => {
+                    if (draft.mode === "edit") {
+                      await update.mutateAsync({ ...draft.tag, ...input });
+                    } else {
+                      await create.mutateAsync(input);
+                    }
+                    setDraft(null);
+                  }}
+                  onCancel={() => setDraft(null)}
+                />
+              </div>
+            )}
+
+            {tags?.length === 0 ? (
+              <p className="text-muted-foreground">
+                フレーバータグが登録されていません
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {tags?.map((tag) => (
+                  <li
+                    key={tag.id}
+                    className="flex items-center gap-3 rounded-lg border p-3"
+                  >
+                    <span
+                      aria-hidden
+                      className="inline-block h-4 w-4 rounded-full"
+                      style={{ background: tag.color }}
+                    />
+                    <span className="flex-1">{tag.name}</span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDraft({ mode: "edit", tag })}
+                    >
+                      編集
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => del.mutate(tag.id)}
+                    >
+                      削除
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,75 +26,99 @@ export function RoastLevelSettings() {
   const update = useUpdateRoastLevel();
   const del = useDeleteRoastLevel();
   const [draft, setDraft] = useState<Draft>(null);
+  const [collapsed, setCollapsed] = useState(true);
 
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">焙煎度</h2>
-        <Button onClick={() => setDraft({ mode: "create" })}>
-          焙煎度を追加
-        </Button>
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          aria-controls="roast-level-content"
+          aria-label={collapsed ? "焙煎度を展開" : "焙煎度を折りたたむ"}
+          className="rounded p-1 hover:bg-muted"
+        >
+          {collapsed ? (
+            <ChevronDown className="h-5 w-5" />
+          ) : (
+            <ChevronUp className="h-5 w-5" />
+          )}
+        </button>
       </div>
 
-      {draft && (
-        <div
-          role="dialog"
-          aria-labelledby="roast-level-dialog-title"
-          className="rounded-lg border bg-muted/30 p-4"
-        >
-          <h3 id="roast-level-dialog-title" className="mb-3 font-medium">
-            {draft.mode === "edit" ? "焙煎度を編集" : "焙煎度を追加"}
-          </h3>
-          <RoastLevelForm
-            key={draft.mode === "edit" ? draft.level.id : "new"}
-            defaultValues={draft.mode === "edit" ? draft.level : empty}
-            onSubmit={async (input) => {
-              if (draft.mode === "edit") {
-                await update.mutateAsync({ ...draft.level, ...input });
-              } else {
-                await create.mutateAsync(input);
-              }
-              setDraft(null);
-            }}
-            onCancel={() => setDraft(null)}
-          />
-        </div>
-      )}
+      <div id="roast-level-content">
+        {!collapsed && (
+          <>
+            <Button onClick={() => setDraft({ mode: "create" })}>
+              焙煎度を追加
+            </Button>
 
-      {levels?.length === 0 ? (
-        <p className="text-muted-foreground">焙煎度が登録されていません</p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {levels?.map((level) => (
-            <li
-              key={level.id}
-              className="flex items-center gap-3 rounded-lg border p-3"
-            >
-              <span
-                aria-hidden
-                className="inline-block h-4 w-4 rounded-full"
-                style={{ background: level.color }}
-              />
-              <span className="flex-1">{level.label}</span>
-              <span className="text-sm text-muted-foreground">
-                順: {level.order}
-              </span>
-              <Button
-                variant="outline"
-                onClick={() => setDraft({ mode: "edit", level })}
+            {draft && (
+              <div
+                role="dialog"
+                aria-labelledby="roast-level-dialog-title"
+                className="rounded-lg border bg-muted/30 p-4"
               >
-                編集
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => del.mutate(level.id)}
-              >
-                削除
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+                <h3 id="roast-level-dialog-title" className="mb-3 font-medium">
+                  {draft.mode === "edit" ? "焙煎度を編集" : "焙煎度を追加"}
+                </h3>
+                <RoastLevelForm
+                  key={draft.mode === "edit" ? draft.level.id : "new"}
+                  defaultValues={draft.mode === "edit" ? draft.level : empty}
+                  onSubmit={async (input) => {
+                    if (draft.mode === "edit") {
+                      await update.mutateAsync({ ...draft.level, ...input });
+                    } else {
+                      await create.mutateAsync(input);
+                    }
+                    setDraft(null);
+                  }}
+                  onCancel={() => setDraft(null)}
+                />
+              </div>
+            )}
+
+            {levels?.length === 0 ? (
+              <p className="text-muted-foreground">
+                焙煎度が登録されていません
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {levels?.map((level) => (
+                  <li
+                    key={level.id}
+                    className="flex items-center gap-3 rounded-lg border p-3"
+                  >
+                    <span
+                      aria-hidden
+                      className="inline-block h-4 w-4 rounded-full"
+                      style={{ background: level.color }}
+                    />
+                    <span className="flex-1">{level.label}</span>
+                    <span className="text-sm text-muted-foreground">
+                      順: {level.order}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDraft({ mode: "edit", level })}
+                    >
+                      編集
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => del.mutate(level.id)}
+                    >
+                      削除
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }

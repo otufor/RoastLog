@@ -14,6 +14,10 @@ function renderSection() {
   );
 }
 
+async function expand() {
+  await userEvent.click(screen.getByRole("button", { name: "焙煎度を展開" }));
+}
+
 describe("RoastLevelSettings", () => {
   beforeEach(async () => {
     await Promise.all([
@@ -25,6 +29,38 @@ describe("RoastLevelSettings", () => {
     ]);
   });
 
+  it("デフォルトで折りたたまれており、リストと追加ボタンが非表示", () => {
+    renderSection();
+    expect(
+      screen.queryByRole("button", { name: "焙煎度を追加" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "焙煎度を展開" }),
+    ).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("展開ボタンをクリックするとコンテンツが表示される", async () => {
+    renderSection();
+    await expand();
+    expect(
+      screen.getByRole("button", { name: "焙煎度を追加" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "焙煎度を折りたたむ" }),
+    ).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("展開後に再クリックすると折りたたまれる", async () => {
+    renderSection();
+    await expand();
+    await userEvent.click(
+      screen.getByRole("button", { name: "焙煎度を折りたたむ" }),
+    );
+    expect(
+      screen.queryByRole("button", { name: "焙煎度を追加" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("登録済み RoastLevel を order 順で表示する", async () => {
     await db.roastLevels.bulkAdd([
       { id: "a", label: "深煎り", color: "#3E1A06", order: 5 },
@@ -32,6 +68,7 @@ describe("RoastLevelSettings", () => {
     ]);
 
     renderSection();
+    await expand();
 
     await waitFor(() => expect(screen.getByText("浅煎り")).toBeInTheDocument());
     const items = screen.getAllByRole("listitem");
@@ -42,6 +79,7 @@ describe("RoastLevelSettings", () => {
   it("「追加」ボタンから新しい RoastLevel を作成できる", async () => {
     const user = userEvent.setup();
     renderSection();
+    await expand();
 
     await user.click(screen.getByRole("button", { name: "焙煎度を追加" }));
 
@@ -66,6 +104,7 @@ describe("RoastLevelSettings", () => {
 
     const user = userEvent.setup();
     renderSection();
+    await expand();
     await waitFor(() => expect(screen.getByText("中煎り")).toBeInTheDocument());
 
     const item = screen.getByRole("listitem");
@@ -86,6 +125,7 @@ describe("RoastLevelSettings", () => {
   it("ラベルが空の場合は保存されない", async () => {
     const user = userEvent.setup();
     renderSection();
+    await expand();
 
     await user.click(screen.getByRole("button", { name: "焙煎度を追加" }));
     const dialog = await screen.findByRole("dialog");
@@ -106,6 +146,7 @@ describe("RoastLevelSettings", () => {
 
     const user = userEvent.setup();
     renderSection();
+    await expand();
     await waitFor(() => expect(screen.getByText("中煎り")).toBeInTheDocument());
 
     const item = screen.getByRole("listitem");
