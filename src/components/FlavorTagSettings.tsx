@@ -87,6 +87,7 @@ export function FlavorTagSettings() {
                 <button
                   type="button"
                   onClick={() => setDraft({ mode: "edit", tag })}
+                  aria-label={`${tag.name} を編集`}
                   className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-80"
                   style={{
                     backgroundColor: tag.color,
@@ -101,36 +102,19 @@ export function FlavorTagSettings() {
                   />
                   {tag.name}
                 </button>
-                {/* Screen-reader-only edit/delete buttons for full a11y */}
-                <button
-                  type="button"
-                  onClick={() => setDraft({ mode: "edit", tag })}
-                  className="sr-only"
-                >
-                  編集
-                </button>
-                <button
-                  type="button"
-                  onClick={() => del.mutate(tag.id)}
-                  className="sr-only"
-                >
-                  削除
-                </button>
               </li>
             );
           })}
         </ul>
       )}
 
-      <div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setDraft({ mode: "create" })}
-        >
-          + フレーバータグを追加
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setDraft({ mode: "create" })}
+      >
+        + フレーバータグを追加
+      </Button>
     </div>
   );
 }

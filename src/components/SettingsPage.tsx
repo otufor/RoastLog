@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { CsvSection } from "@/components/CsvSection";
 import { FlavorTagSettings } from "@/components/FlavorTagSettings";
 import { LocationSettings } from "@/components/LocationSettings";
@@ -27,12 +26,7 @@ function SettingsSection({
 export function SettingsPage() {
   return (
     <div className="flex flex-col gap-6 p-4">
-      <div className="flex items-center justify-between py-2">
-        <h1 className="text-xl font-semibold">設定</h1>
-        <Link to="/beans" className="text-sm underline">
-          ← 生豆一覧へ
-        </Link>
-      </div>
+      <h1 className="py-2 text-xl font-semibold">設定</h1>
       <SettingsSection label="位置情報">
         <LocationSettings />
       </SettingsSection>

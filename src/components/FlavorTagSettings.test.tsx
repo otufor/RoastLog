@@ -63,8 +63,7 @@ describe("FlavorTagSettings", () => {
       expect(screen.getByText("フローラル")).toBeInTheDocument(),
     );
 
-    const item = screen.getByRole("listitem");
-    await user.click(within(item).getByRole("button", { name: "編集" }));
+    await user.click(screen.getByRole("button", { name: "フローラル を編集" }));
 
     const dialog = await screen.findByRole("dialog");
     const nameInput = within(dialog).getByLabelText("名前");
@@ -92,7 +91,7 @@ describe("FlavorTagSettings", () => {
     expect(await db.flavorTags.count()).toBe(0);
   });
 
-  it("「削除」ボタンで消える", async () => {
+  it("ピルをタップして編集フォームから削除できる", async () => {
     await db.flavorTags.add({
       id: "x",
       name: "ナッツ",
@@ -103,8 +102,9 @@ describe("FlavorTagSettings", () => {
     renderSection();
     await waitFor(() => expect(screen.getByText("ナッツ")).toBeInTheDocument());
 
-    const item = screen.getByRole("listitem");
-    await user.click(within(item).getByRole("button", { name: "削除" }));
+    await user.click(screen.getByRole("button", { name: "ナッツ を編集" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "削除" }));
 
     await waitFor(() =>
       expect(screen.queryByText("ナッツ")).not.toBeInTheDocument(),
