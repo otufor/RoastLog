@@ -29,6 +29,21 @@ const RADAR_KEYS_JP: Record<string, string> = {
 const COLOR_1 = "#2D7D52";
 const COLOR_2 = "#B06B1E";
 
+const tooltipStyle = {
+  background: "var(--card)",
+  border: "1px solid var(--border)",
+  borderRadius: 6,
+  padding: "6px 10px",
+  fontSize: 13,
+} as const;
+
+const emptyMessageStyle = {
+  fontSize: 13,
+  color: "var(--muted-foreground)",
+  padding: "24px 0",
+  textAlign: "center",
+} as const;
+
 function defaultSelector1Id(
   bean: Bean | null,
   beanLogs: RoastLog[],
@@ -146,16 +161,7 @@ export function AnalysisPage() {
         <h2 className="text-lg font-semibold">重量減少率の推移</h2>
         {selectedBeanId !== null &&
           (beanLogs.length === 0 ? (
-            <p
-              style={{
-                fontSize: 13,
-                color: "var(--muted-foreground)",
-                padding: "24px 0",
-                textAlign: "center",
-              }}
-            >
-              まだ焙煎ログがありません
-            </p>
+            <p style={emptyMessageStyle}>まだ焙煎ログがありません</p>
           ) : (
             <div data-testid="line-chart" style={{ height: 300 }}>
               <ResponsiveLine
@@ -172,16 +178,7 @@ export function AnalysisPage() {
                 axisLeft={{ legend: "減少率 (%)", legendOffset: -40 }}
                 useMesh
                 tooltip={({ point }) => (
-                  <div
-                    data-testid="analysis-tooltip"
-                    style={{
-                      background: "var(--card)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 6,
-                      padding: "6px 10px",
-                      fontSize: 13,
-                    }}
-                  >
+                  <div data-testid="analysis-tooltip" style={tooltipStyle}>
                     {point.data.yFormatted}%
                   </div>
                 )}

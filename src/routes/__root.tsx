@@ -1,8 +1,10 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { BottomTabBar } from "@/components/BottomTabBar";
+import { useTheme } from "@/hooks/useTheme";
 
-export const Route = createRootRoute({
-  component: () => (
+function RootComponent() {
+  useTheme();
+  return (
     <div
       style={{
         display: "flex",
@@ -16,5 +18,9 @@ export const Route = createRootRoute({
       </div>
       <BottomTabBar />
     </div>
-  ),
+  );
+}
+
+export const Route = createRootRoute({
+  component: RootComponent,
 });
