@@ -29,6 +29,14 @@ const RADAR_KEYS_JP: Record<string, string> = {
 const COLOR_1 = "#2D7D52";
 const COLOR_2 = "#B06B1E";
 
+const tooltipStyle = {
+  background: "var(--card)",
+  border: "1px solid var(--border)",
+  borderRadius: 6,
+  padding: "6px 10px",
+  fontSize: 13,
+} as const;
+
 function defaultSelector1Id(
   bean: Bean | null,
   beanLogs: RoastLog[],
@@ -172,16 +180,7 @@ export function AnalysisPage() {
                 axisLeft={{ legend: "減少率 (%)", legendOffset: -40 }}
                 useMesh
                 tooltip={({ point }) => (
-                  <div
-                    data-testid="analysis-tooltip"
-                    style={{
-                      background: "var(--card)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 6,
-                      padding: "6px 10px",
-                      fontSize: 13,
-                    }}
-                  >
+                  <div data-testid="analysis-tooltip" style={tooltipStyle}>
                     {point.data.yFormatted}%
                   </div>
                 )}
