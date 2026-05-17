@@ -25,6 +25,7 @@ export default defineConfig({
       workbox: {
         navigateFallback: "/RoastLog/index.html",
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
+        globIgnores: ["mockServiceWorker.js"],
         runtimeCaching: [],
       },
       manifest: {

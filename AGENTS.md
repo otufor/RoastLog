@@ -47,6 +47,12 @@ brew install gitleaks
 
 # Windows
 winget install gitleaks.gitleaks
+
+# その他 (Go が入っている場合)
+go install github.com/gitleaks/gitleaks/v8@latest
+
+# バイナリ直接ダウンロード
+# https://github.com/gitleaks/gitleaks/releases
 ```
 
 > **WSL 注意**: git hooks は最小 PATH で実行されるため、`lefthook.yml` では絶対パス `/usr/local/bin/gitleaks` を使っています。`which gitleaks` で確認してください。
