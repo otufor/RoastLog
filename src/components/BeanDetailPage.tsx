@@ -282,7 +282,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
             border: "0.5px solid var(--border)",
             borderRadius: 10,
             padding: "14px 16px",
-            boxShadow: "0 1px 2px rgba(28,23,20,0.04)",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
             marginBottom: 12,
           }}
         >
@@ -366,7 +366,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
             border: "0.5px solid var(--border)",
             borderRadius: 10,
             overflow: "hidden",
-            boxShadow: "0 1px 2px rgba(28,23,20,0.04)",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
             marginBottom: 12,
           }}
         >
@@ -429,7 +429,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                 border: "0.5px solid #2D7D52",
                 borderRadius: 10,
                 padding: "12px 14px",
-                boxShadow: "0 1px 2px rgba(28,23,20,0.04)",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -457,7 +457,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                       fontWeight: 500,
                       padding: "2px 7px",
                       borderRadius: 999,
-                      background: "#E0F2E9",
+                      background: "rgba(45,125,82,0.12)",
                       color: "#2D7D52",
                     }}
                   >
@@ -506,7 +506,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                 border: "0.5px solid var(--border)",
                 borderRadius: 10,
                 padding: "12px 14px",
-                boxShadow: "0 1px 2px rgba(28,23,20,0.04)",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -613,7 +613,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                       border: `0.5px solid ${isBest ? "#2D7D52" : "var(--border)"}`,
                       borderRadius: 10,
                       padding: "10px 14px",
-                      boxShadow: "0 1px 2px rgba(28,23,20,0.04)",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
@@ -637,7 +637,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                               fontWeight: 500,
                               padding: "2px 7px",
                               borderRadius: 999,
-                              background: "#E0F2E9",
+                              background: "rgba(45,125,82,0.12)",
                               color: "#2D7D52",
                             }}
                           >
@@ -729,7 +729,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
             style={{
               position: "absolute",
               inset: 0,
-              background: "rgba(28,23,20,0.4)",
+              background: "rgba(0,0,0,0.5)",
               border: 0,
               cursor: "default",
             }}
@@ -744,7 +744,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
               background: "var(--card)",
               borderTopLeftRadius: 16,
               borderTopRightRadius: 16,
-              boxShadow: "0 -4px 20px rgba(28,23,20,0.12)",
+              boxShadow: "0 -4px 20px rgba(0,0,0,0.15)",
               padding: "14px 16px 32px",
             }}
           >

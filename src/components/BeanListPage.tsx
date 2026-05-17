@@ -62,9 +62,9 @@ function StockBadge({ pct }: { pct: number }) {
           fontWeight: 500,
           padding: "2px 7px",
           borderRadius: 999,
-          background: "#FDEAEA",
+          background: "rgba(184,50,50,0.12)",
           color: "#B83232",
-          border: "0.5px solid #B8323233",
+          border: "0.5px solid rgba(184,50,50,0.25)",
         }}
       >
         残りわずか
@@ -128,13 +128,13 @@ export function BeanListPage() {
   ): React.CSSProperties {
     const active = filterStock === id;
     let bg = active ? "var(--foreground)" : "var(--card)";
-    let color = active ? "#fff" : "var(--muted-foreground)";
+    let color = active ? "var(--background)" : "var(--muted-foreground)";
     if (!active && warn && lowStockCount > 0) {
-      bg = "#FFF8E8";
+      bg = "rgba(212,148,58,0.12)";
       color = "#D4943A";
     }
     if (!active && danger && outStockCount > 0) {
-      bg = "#FDEAEA";
+      bg = "rgba(184,50,50,0.12)";
       color = "#B83232";
     }
     return {
@@ -386,7 +386,7 @@ export function BeanListPage() {
                   borderRadius: 10,
                   padding: 12,
                   boxShadow:
-                    "0 1px 2px rgba(28,23,20,0.04), 0 1px 1px rgba(28,23,20,0.03)",
+                    "0 1px 2px rgba(0,0,0,0.06), 0 1px 1px rgba(0,0,0,0.04)",
                   cursor: "pointer",
                   textAlign: "left",
                   width: "100%",
@@ -555,7 +555,7 @@ export function BeanListPage() {
           alignItems: "center",
           justifyContent: "center",
           boxShadow:
-            "0 4px 12px rgba(176,107,30,0.28), 0 2px 4px rgba(28,23,20,0.08)",
+            "0 4px 12px rgba(176,107,30,0.28), 0 2px 4px rgba(0,0,0,0.10)",
         }}
       >
         ＋
