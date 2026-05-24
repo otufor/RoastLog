@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 
-const TABS = [
+export const TABS = [
   {
     id: "log",
     label: "ログ",
