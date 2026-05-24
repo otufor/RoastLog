@@ -130,7 +130,7 @@ describe("RoastLogDetailPage", () => {
     await waitFor(() =>
       expect(screen.getByText("エチオピア イルガチェフェ")).toBeInTheDocument(),
     );
-    expect(screen.getByText("2025-04-20")).toBeInTheDocument();
+    expect(screen.getByText("2025-04-20 00:00")).toBeInTheDocument();
     expect(screen.getByText("中煎り")).toBeInTheDocument();
     expect(screen.getByText("手網")).toBeInTheDocument();
     expect(screen.getByText(/16\.0%/)).toBeInTheDocument();
