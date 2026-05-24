@@ -34,7 +34,7 @@ export function RoastLogEditPage({ logId }: RoastLogEditPageProps) {
 
   const defaultValues: CreateRoastLogInput = {
     beanId: log.beanId,
-    roastDate: log.roastDate,
+    roastStartTime: log.roastStartTime,
     roastLevelId: log.roastLevelId,
     roastDeviceId: log.roastDeviceId,
     roastDurationSec: log.roastDurationSec,

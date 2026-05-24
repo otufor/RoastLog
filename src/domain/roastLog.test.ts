@@ -10,7 +10,7 @@ import type { RoastLog } from "@/schemas/roastLog";
 const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
   id: crypto.randomUUID(),
   beanId: "bean-1",
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -30,11 +30,16 @@ const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
 });
 
 describe("filterAndSortLogs", () => {
-  it("フィルターなし・デフォルトソートで roastDate 降順に並ぶ", () => {
-    const logOld = makeLog({ roastDate: "2025-04-01" });
-    const logNew = makeLog({ roastDate: "2025-04-20" });
-    const result = filterAndSortLogs([logOld, logNew], {}, "roastDate", "desc");
-    expect(result.map((l) => l.roastDate)).toEqual([
+  it("フィルターなし・デフォルトソートで roastStartTime 降順に並ぶ", () => {
+    const logOld = makeLog({ roastStartTime: "2025-04-01T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-20T00:00" });
+    const result = filterAndSortLogs(
+      [logOld, logNew],
+      {},
+      "roastStartTime",
+      "desc",
+    );
+    expect(result.map((l) => l.roastStartTime.slice(0, 10))).toEqual([
       "2025-04-20",
       "2025-04-01",
     ]);
@@ -46,7 +51,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [logA, logB],
       { beanId: "bean-A" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -59,7 +64,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [logLight, logMedium],
       { roastLevelId: "light" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -72,7 +77,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [logA, logB],
       { roastDeviceId: "device-1" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -86,7 +91,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [log3, log5, logNull],
       { scoreMin: 4 },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -99,7 +104,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [log2, log4],
       { scoreMax: 3 },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -107,36 +112,41 @@ describe("filterAndSortLogs", () => {
   });
 
   it("dateFrom で指定日以降のみ返す", () => {
-    const logOld = makeLog({ roastDate: "2025-03-01" });
-    const logNew = makeLog({ roastDate: "2025-04-01" });
+    const logOld = makeLog({ roastStartTime: "2025-03-01T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-01T00:00" });
     const result = filterAndSortLogs(
       [logOld, logNew],
       { dateFrom: "2025-04-01" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
-    expect(result[0].roastDate).toBe("2025-04-01");
+    expect(result[0].roastStartTime.slice(0, 10)).toBe("2025-04-01");
   });
 
   it("dateTo で指定日以前のみ返す", () => {
-    const logOld = makeLog({ roastDate: "2025-03-01" });
-    const logNew = makeLog({ roastDate: "2025-04-01" });
+    const logOld = makeLog({ roastStartTime: "2025-03-01T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-01T00:00" });
     const result = filterAndSortLogs(
       [logOld, logNew],
       { dateTo: "2025-03-31" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
-    expect(result[0].roastDate).toBe("2025-03-01");
+    expect(result[0].roastStartTime.slice(0, 10)).toBe("2025-03-01");
   });
 
-  it("roastDate 昇順ソートで古い順に並ぶ", () => {
-    const logOld = makeLog({ roastDate: "2025-04-01" });
-    const logNew = makeLog({ roastDate: "2025-04-20" });
-    const result = filterAndSortLogs([logNew, logOld], {}, "roastDate", "asc");
-    expect(result.map((l) => l.roastDate)).toEqual([
+  it("roastStartTime 昇順ソートで古い順に並ぶ", () => {
+    const logOld = makeLog({ roastStartTime: "2025-04-01T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-20T00:00" });
+    const result = filterAndSortLogs(
+      [logNew, logOld],
+      {},
+      "roastStartTime",
+      "asc",
+    );
+    expect(result.map((l) => l.roastStartTime.slice(0, 10))).toEqual([
       "2025-04-01",
       "2025-04-20",
     ]);
@@ -186,17 +196,17 @@ describe("filterAndSortLogs", () => {
     const logA = makeLog({
       beanId: "bean-A",
       overallScore: 5,
-      roastDate: "2025-04-01",
+      roastStartTime: "2025-04-01T00:00",
     });
     const logB = makeLog({
       beanId: "bean-A",
       overallScore: 3,
-      roastDate: "2025-04-20",
+      roastStartTime: "2025-04-20T00:00",
     });
     const logC = makeLog({
       beanId: "bean-B",
       overallScore: 4,
-      roastDate: "2025-04-10",
+      roastStartTime: "2025-04-10T00:00",
     });
     const result = filterAndSortLogs(
       [logA, logB, logC],

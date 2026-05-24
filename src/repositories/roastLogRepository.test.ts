@@ -8,7 +8,7 @@ let repo: RoastLogRepository;
 
 beforeEach(() => {
   db = new Dexie(`roastlog-test-${crypto.randomUUID()}`);
-  db.version(1).stores({ roastLogs: "id, beanId, roastDate" });
+  db.version(1).stores({ roastLogs: "id, beanId, roastStartTime" });
   repo = new RoastLogRepository(db.table("roastLogs"));
 });
 
@@ -23,7 +23,7 @@ const BEAN_ID_B = "550e8400-e29b-41d4-a716-446655440002";
 const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
   id: crypto.randomUUID(),
   beanId: BEAN_ID_A,
-  roastDate: "2024-03-20",
+  roastStartTime: "2024-03-20T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,

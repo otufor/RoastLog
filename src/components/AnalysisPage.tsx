@@ -56,7 +56,7 @@ export function AnalysisPage() {
   const levelMap = Object.fromEntries(levels.map((l) => [l.id, l]));
   const beanLogs = allLogs
     .filter((l) => l.beanId === selectedBeanId)
-    .sort((a, b) => b.roastDate.localeCompare(a.roastDate));
+    .sort((a, b) => b.roastStartTime.localeCompare(a.roastStartTime));
 
   const lineData =
     selectedBeanId !== null
@@ -218,7 +218,7 @@ export function AnalysisPage() {
                       fontSize: 13,
                     }}
                   >
-                    {log.roastDate}
+                    {log.roastStartTime.slice(0, 10)}
                   </span>
                   <span
                     style={{

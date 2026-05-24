@@ -41,7 +41,7 @@ const DEVICE: RoastDevice = {
 
 const DEFAULTS: CreateRoastLogInput = {
   beanId: BEAN.id,
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: LEVEL.id,
   roastDeviceId: null,
   roastDurationSec: 480,

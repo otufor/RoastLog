@@ -48,7 +48,7 @@ const SAMPLE_LEVEL: RoastLevel = {
 const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
   id: crypto.randomUUID(),
   beanId: BEAN_ID,
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: LEVEL_ID,
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -168,8 +168,8 @@ describe("RoastLogListPage", () => {
   it("複数ログを日付降順で並べる", async () => {
     await db.beans.put(SAMPLE_BEAN);
     await db.roastLevels.put(SAMPLE_LEVEL);
-    const logOld = makeLog({ roastDate: "2025-04-03" });
-    const logNew = makeLog({ roastDate: "2025-04-20" });
+    const logOld = makeLog({ roastStartTime: "2025-04-03T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-20T00:00" });
     await db.roastLogs.put(logOld);
     await db.roastLogs.put(logNew);
 
@@ -210,10 +210,10 @@ describe("RoastLogListPage", () => {
     await db.beans.put(beanB);
     await db.roastLevels.put(SAMPLE_LEVEL);
     await db.roastLogs.put(
-      makeLog({ beanId: BEAN_ID, roastDate: "2025-04-20" }),
+      makeLog({ beanId: BEAN_ID, roastStartTime: "2025-04-20T00:00" }),
     );
     await db.roastLogs.put(
-      makeLog({ beanId: BEAN_ID_2, roastDate: "2025-04-10" }),
+      makeLog({ beanId: BEAN_ID_2, roastStartTime: "2025-04-10T00:00" }),
     );
 
     renderPage();
@@ -245,10 +245,10 @@ describe("RoastLogListPage", () => {
     await db.beans.put(SAMPLE_BEAN);
     await db.roastLevels.put(SAMPLE_LEVEL);
     await db.roastLogs.put(
-      makeLog({ overallScore: 2, roastDate: "2025-04-01" }),
+      makeLog({ overallScore: 2, roastStartTime: "2025-04-01T00:00" }),
     );
     await db.roastLogs.put(
-      makeLog({ overallScore: 5, roastDate: "2025-04-20" }),
+      makeLog({ overallScore: 5, roastStartTime: "2025-04-20T00:00" }),
     );
 
     renderPage();

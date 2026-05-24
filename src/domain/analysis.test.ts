@@ -11,7 +11,7 @@ import {
 const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
   id: crypto.randomUUID(),
   beanId: "bean-1",
-  roastDate: "2025-01-01",
+  roastStartTime: "2025-01-01T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -60,17 +60,17 @@ describe("buildLineChartData", () => {
   it("複数ログが roastDate 昇順で x=1,2,3 に並ぶ", () => {
     const logs = [
       makeLog({
-        roastDate: "2025-03-01",
+        roastStartTime: "2025-03-01T00:00",
         weightBeforeG: 200,
         weightAfterG: 160,
       }),
       makeLog({
-        roastDate: "2025-01-01",
+        roastStartTime: "2025-01-01T00:00",
         weightBeforeG: 250,
         weightAfterG: 210,
       }),
       makeLog({
-        roastDate: "2025-02-01",
+        roastStartTime: "2025-02-01T00:00",
         weightBeforeG: 300,
         weightAfterG: 240,
       }),
@@ -88,12 +88,12 @@ describe("buildLineChartData", () => {
 
   it("重量が null のログはチャートデータから除外される", () => {
     const withWeight = makeLog({
-      roastDate: "2025-01-01",
+      roastStartTime: "2025-01-01T00:00",
       weightBeforeG: 250,
       weightAfterG: 210,
     });
     const noWeight = makeLog({
-      roastDate: "2025-02-01",
+      roastStartTime: "2025-02-01T00:00",
       weightBeforeG: null,
       weightAfterG: null,
     });
@@ -155,12 +155,12 @@ describe("selectDefaultLog", () => {
   it("bestLogId なしなら Tasting ありの最新ログを返す", () => {
     const old = makeLog({
       id: "old",
-      roastDate: "2025-01-01",
+      roastStartTime: "2025-01-01T00:00",
       tasting: TASTING,
     });
     const newer = makeLog({
       id: "new",
-      roastDate: "2025-06-01",
+      roastStartTime: "2025-06-01T00:00",
       tasting: TASTING,
     });
     expect(selectDefaultLog(makeBean(), [old, newer])).toBe("new");
@@ -169,12 +169,12 @@ describe("selectDefaultLog", () => {
   it("bestLogId が Tasting ありなら BestRecipe を返す", () => {
     const best = makeLog({
       id: "best",
-      roastDate: "2025-01-01",
+      roastStartTime: "2025-01-01T00:00",
       tasting: TASTING,
     });
     const newer = makeLog({
       id: "new",
-      roastDate: "2025-06-01",
+      roastStartTime: "2025-06-01T00:00",
       tasting: TASTING,
     });
     const bean = makeBean({ bestLogId: "best" });
@@ -184,12 +184,12 @@ describe("selectDefaultLog", () => {
   it("bestLogId が Tasting なしなら最新の Tasting ありログを返す", () => {
     const best = makeLog({
       id: "best",
-      roastDate: "2025-01-01",
+      roastStartTime: "2025-01-01T00:00",
       tasting: null,
     });
     const newer = makeLog({
       id: "new",
-      roastDate: "2025-06-01",
+      roastStartTime: "2025-06-01T00:00",
       tasting: TASTING,
     });
     const bean = makeBean({ bestLogId: "best" });

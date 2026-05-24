@@ -58,7 +58,7 @@ const FLAVOR_TAG: FlavorTag = {
 const LOG: RoastLog = {
   id: "550e8400-e29b-41d4-a716-446655440099",
   beanId: BEAN.id,
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: LEVEL.id,
   roastDeviceId: DEVICE.id,
   roastDurationSec: 480,
@@ -222,7 +222,7 @@ describe("RoastLogDetailPage", () => {
     const previousLog: RoastLog = {
       ...LOG,
       id: "550e8400-e29b-41d4-a716-446655440098",
-      roastDate: "2025-04-10",
+      roastStartTime: "2025-04-10T00:00",
       firstCrackSec: 280,
     };
     await db.beans.put(BEAN);

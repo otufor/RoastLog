@@ -45,7 +45,7 @@ const LEVEL: RoastLevel = {
 const LOG: RoastLog = {
   id: "550e8400-e29b-41d4-a716-446655440099",
   beanId: BEAN.id,
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: LEVEL.id,
   roastDeviceId: null,
   roastDurationSec: 480,

@@ -27,7 +27,7 @@ const TastingAxisScore = z.number().int().min(1).max(5).nullable();
 const FormSchema = z
   .object({
     beanId: z.string().min(1, "豆を選択してください"),
-    roastDate: z.string().min(1, "焙煎日を入力してください"),
+    roastStartTime: z.string().min(1, "焙煎日時を入力してください"),
     roastLevelId: z.string().min(1, "焙煎度を選択してください"),
     roastDeviceId: z.string().nullable(),
     roastDurationSec: z.number().int().nonnegative(),
@@ -100,7 +100,7 @@ export function RoastLogForm({
   const form = useForm({
     defaultValues: {
       beanId: defaultValues.beanId,
-      roastDate: defaultValues.roastDate,
+      roastStartTime: defaultValues.roastStartTime,
       roastLevelId: defaultValues.roastLevelId,
       roastDeviceId: defaultValues.roastDeviceId,
       roastDurationSec: defaultValues.roastDurationSec,
@@ -209,14 +209,14 @@ export function RoastLogForm({
         )}
       </form.Field>
 
-      {/* 焙煎日 */}
-      <form.Field name="roastDate">
+      {/* 焙煎日時 */}
+      <form.Field name="roastStartTime">
         {(field) => (
           <div className="flex flex-col gap-1">
-            <Label htmlFor="log-roast-date">焙煎日</Label>
+            <Label htmlFor="log-roast-start-time">焙煎日時</Label>
             <Input
-              id="log-roast-date"
-              type="date"
+              id="log-roast-start-time"
+              type="datetime-local"
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
             />

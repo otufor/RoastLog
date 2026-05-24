@@ -42,7 +42,7 @@ function applyDraft(
   return {
     ...base,
     beanId: draft.beanId,
-    roastDate: draft.roastDate,
+    roastStartTime: draft.roastStartTime,
     roastLevelId: draft.roastLevelId,
     roastDeviceId: draft.roastDeviceId,
     roastDurationSec: draft.roastDurationSec,
@@ -59,7 +59,7 @@ function applyDraft(
 
 const EMPTY_DEFAULTS: CreateRoastLogInput = {
   beanId: "",
-  roastDate: "",
+  roastStartTime: "",
   roastLevelId: "",
   roastDeviceId: null,
   roastDurationSec: 10 * 60,
@@ -112,11 +112,12 @@ export function RoastLogCreatePage({ fromLogId }: RoastLogCreatePageProps) {
   )
     return null;
 
-  const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const nowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
   const defaultValues: CreateRoastLogInput = {
     ...EMPTY_DEFAULTS,
-    roastDate: todayStr,
+    roastStartTime: nowStr,
     beanId: beans[0]?.id ?? "",
     roastLevelId: levels[0]?.id ?? "",
     roastDeviceId: devices[0]?.id ?? null,

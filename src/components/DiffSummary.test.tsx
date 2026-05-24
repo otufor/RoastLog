@@ -6,7 +6,7 @@ import type { RoastLog } from "@/schemas/roastLog";
 const BASE: RoastLog = {
   id: "550e8400-e29b-41d4-a716-446655440010",
   beanId: "550e8400-e29b-41d4-a716-446655440001",
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -29,7 +29,7 @@ describe("DiffSummary", () => {
     const previous: RoastLog = {
       ...BASE,
       id: "550e8400-e29b-41d4-a716-446655440011",
-      roastDate: "2025-04-10",
+      roastStartTime: "2025-04-10T00:00",
       firstCrackSec: 280,
       secondCrackSec: 410,
       weightBeforeG: 250,

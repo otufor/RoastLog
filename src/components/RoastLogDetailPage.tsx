@@ -105,8 +105,8 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
       </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        <dt className="text-muted-foreground">焙煎日</dt>
-        <dd>{log.roastDate}</dd>
+        <dt className="text-muted-foreground">焙煎日時</dt>
+        <dd>{log.roastStartTime.replace("T", " ")}</dd>
 
         <dt className="text-muted-foreground">焙煎度</dt>
         <dd>{level?.label ?? "—"}</dd>

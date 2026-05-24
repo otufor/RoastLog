@@ -14,7 +14,7 @@ const validTasting = {
 const validRoastLog = {
   id: "550e8400-e29b-41d4-a716-446655440000",
   beanId: "550e8400-e29b-41d4-a716-446655440001",
-  roastDate: "2024-03-20",
+  roastStartTime: "2024-03-20T00:00",
   roastLevelId: "level-medium",
   roastDeviceId: null,
   roastDurationSec: 480,
