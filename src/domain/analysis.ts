@@ -19,15 +19,15 @@ const TASTING_AXES = [
 ] as const;
 
 export function buildLineChartData(logs: RoastLog[]): LineChartSeries[] {
-  const sorted = [...logs].sort((a, b) =>
-    a.roastDate.localeCompare(b.roastDate),
-  );
+  const sorted = [...logs]
+    .sort((a, b) => a.roastDate.localeCompare(b.roastDate))
+    .filter((log) => log.weightBeforeG !== null && log.weightAfterG !== null);
   return [
     {
       id: "WeightLossRate",
       data: sorted.map((log, i) => ({
         x: i + 1,
-        y: calcWeightLossRate(log.weightBeforeG, log.weightAfterG),
+        y: calcWeightLossRate(log.weightBeforeG, log.weightAfterG) as number,
       })),
     },
   ];

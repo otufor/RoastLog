@@ -28,9 +28,17 @@ export function calcDiff(current: RoastLog, previous: RoastLog): RoastLogDiff {
       current.secondCrackSec,
       previous.secondCrackSec,
     ),
-    weightLossRateDiffPct:
-      calcWeightLossRate(current.weightBeforeG, current.weightAfterG) -
-      calcWeightLossRate(previous.weightBeforeG, previous.weightAfterG),
+    weightLossRateDiffPct: (() => {
+      const cur = calcWeightLossRate(
+        current.weightBeforeG,
+        current.weightAfterG,
+      );
+      const prev = calcWeightLossRate(
+        previous.weightBeforeG,
+        previous.weightAfterG,
+      );
+      return cur !== null && prev !== null ? cur - prev : null;
+    })(),
     overallScoreDiff: diffNullable(current.overallScore, previous.overallScore),
     outdoorTempDiff: diffNullable(current.outdoorTempC, previous.outdoorTempC),
     indoorTempDiff: diffNullable(current.indoorTempC, previous.indoorTempC),

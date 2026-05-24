@@ -35,10 +35,12 @@ const FormSchema = z
     secondCrackSec: z.number().int().nonnegative().nullable(),
     weightBeforeG: z
       .number()
-      .positive("焙煎前重量は0より大きい値を入力してください"),
+      .positive("焙煎前重量は0より大きい値を入力してください")
+      .nullable(),
     weightAfterG: z
       .number()
-      .positive("焙煎後重量は0より大きい値を入力してください"),
+      .positive("焙煎後重量は0より大きい値を入力してください")
+      .nullable(),
     indoorTempC: z.number().nullable(),
     outdoorTempC: z.number().nullable(),
     outdoorHumidity: z.number().min(0).max(100).nullable(),
@@ -349,8 +351,12 @@ export function RoastLogForm({
                   type="number"
                   min={0}
                   step={0.1}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  value={field.state.value ?? ""}
+                  onChange={(e) =>
+                    field.handleChange(
+                      e.target.value === "" ? null : Number(e.target.value),
+                    )
+                  }
                 />
                 {field.state.meta.errors.map((err) =>
                   err ? (
@@ -376,8 +382,12 @@ export function RoastLogForm({
                   type="number"
                   min={0}
                   step={0.1}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  value={field.state.value ?? ""}
+                  onChange={(e) =>
+                    field.handleChange(
+                      e.target.value === "" ? null : Number(e.target.value),
+                    )
+                  }
                 />
                 {field.state.meta.errors.map((err) =>
                   err ? (
@@ -398,7 +408,7 @@ export function RoastLogForm({
         <div className="flex items-center justify-between rounded-md bg-muted px-3 py-2">
           <span className="text-sm text-muted-foreground">重量減少率</span>
           <span className="font-mono text-sm font-medium">
-            {weightLossRate.toFixed(1)}%
+            {weightLossRate !== null ? `${weightLossRate.toFixed(1)}%` : "—"}
           </span>
         </div>
       </div>

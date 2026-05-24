@@ -124,13 +124,13 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
         <dd>{formatSec(log.secondCrackSec)}</dd>
 
         <dt className="text-muted-foreground">焙煎前重量</dt>
-        <dd>{log.weightBeforeG}g</dd>
+        <dd>{log.weightBeforeG != null ? `${log.weightBeforeG}g` : "—"}</dd>
 
         <dt className="text-muted-foreground">焙煎後重量</dt>
-        <dd>{log.weightAfterG}g</dd>
+        <dd>{log.weightAfterG != null ? `${log.weightAfterG}g` : "—"}</dd>
 
         <dt className="text-muted-foreground">重量減少率</dt>
-        <dd>{rate.toFixed(1)}%</dd>
+        <dd>{rate != null ? `${rate.toFixed(1)}%` : "—"}</dd>
 
         <dt className="text-muted-foreground">室内温度</dt>
         <dd>{log.indoorTempC != null ? `${log.indoorTempC}℃` : "—"}</dd>

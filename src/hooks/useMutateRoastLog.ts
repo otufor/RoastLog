@@ -15,7 +15,9 @@ export function useCreateRoastLog() {
       const log: RoastLog = { ...input, id: crypto.randomUUID() };
       await db.transaction("rw", [db.roastLogs, db.beans], async () => {
         await repo.save(log);
-        await beanRepo.decrementStock(input.beanId, input.weightBeforeG);
+        if (input.weightBeforeG != null) {
+          await beanRepo.decrementStock(input.beanId, input.weightBeforeG);
+        }
       });
       return log;
     },

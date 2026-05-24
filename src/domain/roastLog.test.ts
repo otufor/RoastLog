@@ -169,6 +169,19 @@ describe("filterAndSortLogs", () => {
     expect(result[1]).toBe(logLow);
   });
 
+  it("weightLossRate ソートで重量 null のログは末尾に並ぶ", () => {
+    const logHigh = makeLog({ weightBeforeG: 250, weightAfterG: 200 });
+    const logNull = makeLog({ weightBeforeG: null, weightAfterG: null });
+    const result = filterAndSortLogs(
+      [logNull, logHigh],
+      {},
+      "weightLossRate",
+      "desc",
+    );
+    expect(result[0]).toBe(logHigh);
+    expect(result[1]).toBe(logNull);
+  });
+
   it("フィルターとソートを組み合わせる", () => {
     const logA = makeLog({
       beanId: "bean-A",
@@ -206,8 +219,16 @@ describe("calcWeightLossRate", () => {
     expect(calcWeightLossRate(100, 100)).toBe(0);
   });
 
-  it("焙煎前重量が 0 以下なら 0 を返す", () => {
-    expect(calcWeightLossRate(0, 0)).toBe(0);
+  it("焙煎前重量が 0 なら null を返す", () => {
+    expect(calcWeightLossRate(0, 0)).toBeNull();
+  });
+
+  it("焙煎前重量が null なら null を返す", () => {
+    expect(calcWeightLossRate(null, 210)).toBeNull();
+  });
+
+  it("焙煎後重量が null なら null を返す", () => {
+    expect(calcWeightLossRate(250, null)).toBeNull();
   });
 });
 

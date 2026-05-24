@@ -491,11 +491,13 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                     color: "var(--muted-foreground)",
                   }}
                 >
-                  {calcWeightLossRate(
-                    bestLog.weightBeforeG,
-                    bestLog.weightAfterG,
-                  ).toFixed(1)}
-                  %
+                  {(() => {
+                    const r = calcWeightLossRate(
+                      bestLog.weightBeforeG,
+                      bestLog.weightAfterG,
+                    );
+                    return r != null ? `${r.toFixed(1)}%` : "—";
+                  })()}
                 </div>
               </div>
             </div>
@@ -672,8 +674,14 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                           color: "var(--muted-foreground)",
                         }}
                       >
-                        {log.weightBeforeG}g → {log.weightAfterG}g ·{" "}
-                        {rate.toFixed(1)}%
+                        {log.weightBeforeG != null
+                          ? `${log.weightBeforeG}g`
+                          : "—"}{" "}
+                        →{" "}
+                        {log.weightAfterG != null
+                          ? `${log.weightAfterG}g`
+                          : "—"}{" "}
+                        · {rate != null ? `${rate.toFixed(1)}%` : "—"}
                       </div>
                     </div>
                   </div>

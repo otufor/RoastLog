@@ -236,7 +236,7 @@ export function AnalysisPage() {
                         : "—"}
                     </span>
                     <span style={{ fontFamily: "ui-monospace, monospace" }}>
-                      {wlr.toFixed(1)}%
+                      {wlr != null ? `${wlr.toFixed(1)}%` : "—"}
                     </span>
                   </span>
                 </button>

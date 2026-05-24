@@ -115,6 +115,18 @@ describe("calcDiff", () => {
     expect(diff.weightLossRateDiffPct).toBeCloseTo(5);
   });
 
+  it("current の重量が null の場合、WeightLossRate 差分は null", () => {
+    const previous: RoastLog = { ...BASE };
+    const current: RoastLog = {
+      ...BASE,
+      weightBeforeG: null,
+      weightAfterG: null,
+    };
+
+    const diff = calcDiff(current, previous);
+    expect(diff.weightLossRateDiffPct).toBeNull();
+  });
+
   it("差分が負になる場合（current < previous）は負の値を返す", () => {
     const previous: RoastLog = { ...BASE, firstCrackSec: 320 };
     const current: RoastLog = { ...BASE, firstCrackSec: 300 };

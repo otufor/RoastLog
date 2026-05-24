@@ -65,8 +65,8 @@ const EMPTY_DEFAULTS: CreateRoastLogInput = {
   roastDurationSec: 10 * 60,
   firstCrackSec: 8 * 60,
   secondCrackSec: 13 * 60,
-  weightBeforeG: 0,
-  weightAfterG: 0,
+  weightBeforeG: null,
+  weightAfterG: null,
   outdoorTempC: null,
   outdoorHumidity: null,
   indoorTempC: null,
@@ -148,7 +148,11 @@ export function RoastLogCreatePage({ fromLogId }: RoastLogCreatePageProps) {
 
   async function handleSubmit(input: CreateRoastLogInput) {
     const bean = beans.find((b) => b.id === input.beanId);
-    if (bean && isStockInsufficient(bean.stockG, input.weightBeforeG)) {
+    if (
+      bean &&
+      input.weightBeforeG != null &&
+      isStockInsufficient(bean.stockG, input.weightBeforeG)
+    ) {
       setPendingInput(input);
       return;
     }

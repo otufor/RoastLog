@@ -46,19 +46,22 @@ export function filterAndSortLogs(
     } else if (sortKey === "overallScore") {
       cmp = (a.overallScore ?? 0) - (b.overallScore ?? 0);
     } else {
-      cmp =
-        calcWeightLossRate(a.weightBeforeG, a.weightAfterG) -
-        calcWeightLossRate(b.weightBeforeG, b.weightAfterG);
+      const aRate =
+        calcWeightLossRate(a.weightBeforeG, a.weightAfterG) ?? -Infinity;
+      const bRate =
+        calcWeightLossRate(b.weightBeforeG, b.weightAfterG) ?? -Infinity;
+      cmp = aRate - bRate;
     }
     return sortDir === "asc" ? cmp : -cmp;
   });
 }
 
 export function calcWeightLossRate(
-  weightBeforeG: number,
-  weightAfterG: number,
-): number {
-  if (weightBeforeG <= 0) return 0;
+  weightBeforeG: number | null,
+  weightAfterG: number | null,
+): number | null {
+  if (weightBeforeG == null || weightAfterG == null || weightBeforeG <= 0)
+    return null;
   return (1 - weightAfterG / weightBeforeG) * 100;
 }
 

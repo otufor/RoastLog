@@ -85,6 +85,22 @@ describe("buildLineChartData", () => {
     expect((wlr.data[1].y as number).toFixed(1)).toBe("20.0");
     expect((wlr.data[2].y as number).toFixed(1)).toBe("20.0");
   });
+
+  it("重量が null のログはチャートデータから除外される", () => {
+    const withWeight = makeLog({
+      roastDate: "2025-01-01",
+      weightBeforeG: 250,
+      weightAfterG: 210,
+    });
+    const noWeight = makeLog({
+      roastDate: "2025-02-01",
+      weightBeforeG: null,
+      weightAfterG: null,
+    });
+    const result = buildLineChartData([withWeight, noWeight]);
+    expect(result[0].data).toHaveLength(1);
+    expect(result[0].data[0].x).toBe(1);
+  });
 });
 
 describe("logsWithTasting", () => {

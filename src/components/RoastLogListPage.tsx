@@ -466,7 +466,8 @@ export function RoastLogListPage() {
                   }}
                 >
                   <span>
-                    {log.roastDate} · 減少率 {rate.toFixed(1)}%
+                    {log.roastDate}
+                    {rate != null ? ` · 減少率 ${rate.toFixed(1)}%` : ""}
                   </span>
                   {log.weatherCode != null && weatherEmoji(log.weatherCode) && (
                     <span role="img" aria-label="天気" style={{ fontSize: 14 }}>
