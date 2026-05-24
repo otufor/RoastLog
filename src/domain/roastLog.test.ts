@@ -3,13 +3,14 @@ import {
   calcWeightLossRate,
   filterAndSortLogs,
   isCleanlinessWarning,
+  isStockInsufficient,
 } from "@/domain/roastLog";
 import type { RoastLog } from "@/schemas/roastLog";
 
 const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
   id: crypto.randomUUID(),
   beanId: "bean-1",
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -29,11 +30,16 @@ const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
 });
 
 describe("filterAndSortLogs", () => {
-  it("フィルターなし・デフォルトソートで roastDate 降順に並ぶ", () => {
-    const logOld = makeLog({ roastDate: "2025-04-01" });
-    const logNew = makeLog({ roastDate: "2025-04-20" });
-    const result = filterAndSortLogs([logOld, logNew], {}, "roastDate", "desc");
-    expect(result.map((l) => l.roastDate)).toEqual([
+  it("フィルターなし・デフォルトソートで roastStartTime 降順に並ぶ", () => {
+    const logOld = makeLog({ roastStartTime: "2025-04-01T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-20T00:00" });
+    const result = filterAndSortLogs(
+      [logOld, logNew],
+      {},
+      "roastStartTime",
+      "desc",
+    );
+    expect(result.map((l) => l.roastStartTime.slice(0, 10))).toEqual([
       "2025-04-20",
       "2025-04-01",
     ]);
@@ -45,7 +51,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [logA, logB],
       { beanId: "bean-A" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -58,7 +64,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [logLight, logMedium],
       { roastLevelId: "light" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -71,7 +77,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [logA, logB],
       { roastDeviceId: "device-1" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -85,7 +91,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [log3, log5, logNull],
       { scoreMin: 4 },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -98,7 +104,7 @@ describe("filterAndSortLogs", () => {
     const result = filterAndSortLogs(
       [log2, log4],
       { scoreMax: 3 },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
@@ -106,36 +112,41 @@ describe("filterAndSortLogs", () => {
   });
 
   it("dateFrom で指定日以降のみ返す", () => {
-    const logOld = makeLog({ roastDate: "2025-03-01" });
-    const logNew = makeLog({ roastDate: "2025-04-01" });
+    const logOld = makeLog({ roastStartTime: "2025-03-01T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-01T00:00" });
     const result = filterAndSortLogs(
       [logOld, logNew],
       { dateFrom: "2025-04-01" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
-    expect(result[0].roastDate).toBe("2025-04-01");
+    expect(result[0].roastStartTime.slice(0, 10)).toBe("2025-04-01");
   });
 
   it("dateTo で指定日以前のみ返す", () => {
-    const logOld = makeLog({ roastDate: "2025-03-01" });
-    const logNew = makeLog({ roastDate: "2025-04-01" });
+    const logOld = makeLog({ roastStartTime: "2025-03-01T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-01T00:00" });
     const result = filterAndSortLogs(
       [logOld, logNew],
       { dateTo: "2025-03-31" },
-      "roastDate",
+      "roastStartTime",
       "desc",
     );
     expect(result).toHaveLength(1);
-    expect(result[0].roastDate).toBe("2025-03-01");
+    expect(result[0].roastStartTime.slice(0, 10)).toBe("2025-03-01");
   });
 
-  it("roastDate 昇順ソートで古い順に並ぶ", () => {
-    const logOld = makeLog({ roastDate: "2025-04-01" });
-    const logNew = makeLog({ roastDate: "2025-04-20" });
-    const result = filterAndSortLogs([logNew, logOld], {}, "roastDate", "asc");
-    expect(result.map((l) => l.roastDate)).toEqual([
+  it("roastStartTime 昇順ソートで古い順に並ぶ", () => {
+    const logOld = makeLog({ roastStartTime: "2025-04-01T00:00" });
+    const logNew = makeLog({ roastStartTime: "2025-04-20T00:00" });
+    const result = filterAndSortLogs(
+      [logNew, logOld],
+      {},
+      "roastStartTime",
+      "asc",
+    );
+    expect(result.map((l) => l.roastStartTime.slice(0, 10))).toEqual([
       "2025-04-01",
       "2025-04-20",
     ]);
@@ -168,21 +179,34 @@ describe("filterAndSortLogs", () => {
     expect(result[1]).toBe(logLow);
   });
 
+  it("weightLossRate ソートで重量 null のログは末尾に並ぶ", () => {
+    const logHigh = makeLog({ weightBeforeG: 250, weightAfterG: 200 });
+    const logNull = makeLog({ weightBeforeG: null, weightAfterG: null });
+    const result = filterAndSortLogs(
+      [logNull, logHigh],
+      {},
+      "weightLossRate",
+      "desc",
+    );
+    expect(result[0]).toBe(logHigh);
+    expect(result[1]).toBe(logNull);
+  });
+
   it("フィルターとソートを組み合わせる", () => {
     const logA = makeLog({
       beanId: "bean-A",
       overallScore: 5,
-      roastDate: "2025-04-01",
+      roastStartTime: "2025-04-01T00:00",
     });
     const logB = makeLog({
       beanId: "bean-A",
       overallScore: 3,
-      roastDate: "2025-04-20",
+      roastStartTime: "2025-04-20T00:00",
     });
     const logC = makeLog({
       beanId: "bean-B",
       overallScore: 4,
-      roastDate: "2025-04-10",
+      roastStartTime: "2025-04-10T00:00",
     });
     const result = filterAndSortLogs(
       [logA, logB, logC],
@@ -205,8 +229,16 @@ describe("calcWeightLossRate", () => {
     expect(calcWeightLossRate(100, 100)).toBe(0);
   });
 
-  it("焙煎前重量が 0 以下なら 0 を返す", () => {
-    expect(calcWeightLossRate(0, 0)).toBe(0);
+  it("焙煎前重量が 0 なら null を返す", () => {
+    expect(calcWeightLossRate(0, 0)).toBeNull();
+  });
+
+  it("焙煎前重量が null なら null を返す", () => {
+    expect(calcWeightLossRate(null, 210)).toBeNull();
+  });
+
+  it("焙煎後重量が null なら null を返す", () => {
+    expect(calcWeightLossRate(250, null)).toBeNull();
   });
 });
 
@@ -221,5 +253,23 @@ describe("isCleanlinessWarning", () => {
 
   it("cleanliness が 3 のとき false", () => {
     expect(isCleanlinessWarning(3)).toBe(false);
+  });
+});
+
+describe("isStockInsufficient", () => {
+  it("使用量が在庫を超えるとき true", () => {
+    expect(isStockInsufficient(100, 150)).toBe(true);
+  });
+
+  it("使用量が在庫と同じとき false", () => {
+    expect(isStockInsufficient(100, 100)).toBe(false);
+  });
+
+  it("使用量が在庫未満のとき false", () => {
+    expect(isStockInsufficient(100, 80)).toBe(false);
+  });
+
+  it("在庫が 0 で使用量が正のとき true", () => {
+    expect(isStockInsufficient(0, 50)).toBe(true);
   });
 });

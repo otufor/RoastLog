@@ -5,7 +5,7 @@ import type { RoastLog } from "@/schemas/roastLog";
 const BASE_LOG: RoastLog = {
   id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   beanId: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  roastDate: "2024-01-15",
+  roastStartTime: "2024-01-15T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 720,
@@ -38,7 +38,7 @@ describe("roastLogsToCSV", () => {
     expect(lines).toHaveLength(1);
     expect(lines[0]).toContain("id");
     expect(lines[0]).toContain("beanId");
-    expect(lines[0]).toContain("roastDate");
+    expect(lines[0]).toContain("roastStartTime");
   });
 
   it("ヘッダーに全フィールドが含まれる", () => {
@@ -47,7 +47,7 @@ describe("roastLogsToCSV", () => {
     const expected = [
       "id",
       "beanId",
-      "roastDate",
+      "roastStartTime",
       "roastLevelId",
       "roastDeviceId",
       "roastDurationSec",
@@ -79,7 +79,7 @@ describe("roastLogsToCSV", () => {
     expect(lines).toHaveLength(2);
     const row = lines[1].split(",");
     expect(row[0]).toBe("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
-    expect(row[2]).toBe("2024-01-15");
+    expect(row[2]).toBe("2024-01-15T00:00");
     expect(row[5]).toBe("720");
     expect(row[9]).toBe("170");
   });

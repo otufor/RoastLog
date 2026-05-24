@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/hooks/queryKeys";
 import {
   type AppSettings,
   AppSettingsSchema,
@@ -6,7 +7,6 @@ import {
 } from "@/schemas/appSettings";
 
 const STORAGE_KEY = "roastlog.appSettings";
-const QUERY_KEY = ["appSettings"] as const;
 
 function readSettings(): AppSettings {
   if (typeof window === "undefined") return DEFAULT_APP_SETTINGS;
@@ -26,7 +26,7 @@ function writeSettings(settings: AppSettings): void {
 
 export function useAppSettings() {
   return useQuery({
-    queryKey: QUERY_KEY,
+    queryKey: QUERY_KEYS.appSettings.all(),
     queryFn: () => readSettings(),
     staleTime: Number.POSITIVE_INFINITY,
   });
@@ -41,7 +41,7 @@ export function useUpdateAppSettings() {
       return validated;
     },
     onSuccess: (settings) => {
-      qc.setQueryData(QUERY_KEY, settings);
+      qc.setQueryData(QUERY_KEYS.appSettings.all(), settings);
     },
   });
 }

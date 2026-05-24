@@ -5,7 +5,7 @@ import type { RoastLog } from "@/schemas/roastLog";
 const BASE: RoastLog = {
   id: "550e8400-e29b-41d4-a716-446655440010",
   beanId: "550e8400-e29b-41d4-a716-446655440001",
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -113,6 +113,18 @@ describe("calcDiff", () => {
     const diff = calcDiff(current, previous);
     // current 15% - previous 10% = 5pt
     expect(diff.weightLossRateDiffPct).toBeCloseTo(5);
+  });
+
+  it("current の重量が null の場合、WeightLossRate 差分は null", () => {
+    const previous: RoastLog = { ...BASE };
+    const current: RoastLog = {
+      ...BASE,
+      weightBeforeG: null,
+      weightAfterG: null,
+    };
+
+    const diff = calcDiff(current, previous);
+    expect(diff.weightLossRateDiffPct).toBeNull();
   });
 
   it("差分が負になる場合（current < previous）は負の値を返す", () => {

@@ -132,7 +132,7 @@ describe("SettingsPage", () => {
     const sampleLog: RoastLog = {
       id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       beanId: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-      roastDate: "2024-01-15",
+      roastStartTime: "2024-01-15T00:00",
       roastLevelId: "medium",
       roastDeviceId: null,
       roastDurationSec: 720,
@@ -186,7 +186,7 @@ describe("SettingsPage", () => {
     const sampleLog: RoastLog = {
       id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       beanId: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-      roastDate: "2024-01-15",
+      roastStartTime: "2024-01-15T00:00",
       roastLevelId: "medium",
       roastDeviceId: null,
       roastDurationSec: 720,

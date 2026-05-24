@@ -5,6 +5,7 @@ import { StarRating } from "@/components/StarRating";
 import {
   calcWeightLossRate,
   filterAndSortLogs,
+  isCleanlinessWarning,
   type LogFilter,
   type LogSortDir,
   type LogSortKey,
@@ -28,8 +29,8 @@ type FilterChipId = (typeof FILTER_CHIPS)[number]["id"];
 
 const SORT_OPTIONS: { value: `${LogSortKey}-${LogSortDir}`; label: string }[] =
   [
-    { value: "roastDate-desc", label: "日付（新しい順）" },
-    { value: "roastDate-asc", label: "日付（古い順）" },
+    { value: "roastStartTime-desc", label: "日付（新しい順）" },
+    { value: "roastStartTime-asc", label: "日付（古い順）" },
     { value: "overallScore-desc", label: "スコア（高い順）" },
     { value: "overallScore-asc", label: "スコア（低い順）" },
     { value: "weightLossRate-desc", label: "減少率（高い順）" },
@@ -40,8 +41,9 @@ export function RoastLogListPage() {
   const navigate = useNavigate();
   const [activeChip, setActiveChip] = useState<FilterChipId>("all");
   const [filter, setFilter] = useState<LogFilter>({});
-  const [sortValue, setSortValue] =
-    useState<`${LogSortKey}-${LogSortDir}`>("roastDate-desc");
+  const [sortValue, setSortValue] = useState<`${LogSortKey}-${LogSortDir}`>(
+    "roastStartTime-desc",
+  );
 
   const { data: logs = [], isLoading: logsLoading } = useRoastLogs();
   const { data: beans = [], isLoading: beansLoading } = useBeans();
@@ -386,7 +388,8 @@ export function RoastLogListPage() {
             const level = levelMap[log.roastLevelId];
             const isBest = bestLogIds.has(log.id);
             const cleanliness = log.tasting?.cleanliness ?? null;
-            const isDanger = cleanliness != null && cleanliness <= 2;
+            const isDanger =
+              cleanliness !== null && isCleanlinessWarning(cleanliness);
             const rate = calcWeightLossRate(
               log.weightBeforeG,
               log.weightAfterG,
@@ -396,7 +399,7 @@ export function RoastLogListPage() {
               <button
                 type="button"
                 key={log.id}
-                aria-label={`${bean?.name ?? "—"} ${log.roastDate}`}
+                aria-label={`${bean?.name ?? "—"} ${log.roastStartTime.slice(0, 10)}`}
                 onClick={() =>
                   navigate({ to: "/logs/$logId", params: { logId: log.id } })
                 }
@@ -464,7 +467,8 @@ export function RoastLogListPage() {
                   }}
                 >
                   <span>
-                    {log.roastDate} · 減少率 {rate.toFixed(1)}%
+                    {log.roastStartTime.slice(0, 10)}
+                    {rate != null ? ` · 減少率 ${rate.toFixed(1)}%` : ""}
                   </span>
                   {log.weatherCode != null && weatherEmoji(log.weatherCode) && (
                     <span role="img" aria-label="天気" style={{ fontSize: 14 }}>

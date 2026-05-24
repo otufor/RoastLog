@@ -81,7 +81,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
   const tagMap = Object.fromEntries(flavorTags.map((t) => [t.id, t]));
   const beanLogs = logs
     .filter((l) => l.beanId === beanId)
-    .sort((a, b) => b.roastDate.localeCompare(a.roastDate));
+    .sort((a, b) => b.roastStartTime.localeCompare(a.roastStartTime));
   const bestLog = bean.bestLogId
     ? (beanLogs.find((l) => l.id === bean.bestLogId) ?? null)
     : null;
@@ -471,7 +471,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                     color: "var(--muted-foreground)",
                   }}
                 >
-                  {bestLog.roastDate}
+                  {bestLog.roastStartTime.slice(0, 10)}
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
@@ -491,11 +491,13 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                     color: "var(--muted-foreground)",
                   }}
                 >
-                  {calcWeightLossRate(
-                    bestLog.weightBeforeG,
-                    bestLog.weightAfterG,
-                  ).toFixed(1)}
-                  %
+                  {(() => {
+                    const r = calcWeightLossRate(
+                      bestLog.weightBeforeG,
+                      bestLog.weightAfterG,
+                    );
+                    return r != null ? `${r.toFixed(1)}%` : "—";
+                  })()}
                 </div>
               </div>
             </div>
@@ -521,7 +523,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                     marginBottom: 4,
                   }}
                 >
-                  候補: {suggestedLog.roastDate}
+                  候補: {suggestedLog.roastStartTime.slice(0, 10)}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   {levelMap[suggestedLog.roastLevelId] && (
@@ -652,7 +654,7 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                           color: "var(--muted-foreground)",
                         }}
                       >
-                        {log.roastDate}
+                        {log.roastStartTime.slice(0, 10)}
                       </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
@@ -672,8 +674,14 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
                           color: "var(--muted-foreground)",
                         }}
                       >
-                        {log.weightBeforeG}g → {log.weightAfterG}g ·{" "}
-                        {rate.toFixed(1)}%
+                        {log.weightBeforeG != null
+                          ? `${log.weightBeforeG}g`
+                          : "—"}{" "}
+                        →{" "}
+                        {log.weightAfterG != null
+                          ? `${log.weightAfterG}g`
+                          : "—"}{" "}
+                        · {rate != null ? `${rate.toFixed(1)}%` : "—"}
                       </div>
                     </div>
                   </div>

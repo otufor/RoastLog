@@ -35,7 +35,7 @@ export function DiffSummary({ current, previous }: DiffSummaryProps) {
         前回ログとの差分
       </h2>
       <p className="text-xs text-muted-foreground">
-        前回焙煎日: {previous.roastDate}
+        前回焙煎日: {previous.roastStartTime.slice(0, 10)}
       </p>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <dt className="text-muted-foreground">1ハゼ差</dt>

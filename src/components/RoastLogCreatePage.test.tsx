@@ -72,6 +72,7 @@ function renderCreatePage() {
 
 describe("RoastLogCreatePage", () => {
   beforeEach(async () => {
+    sessionStorage.clear();
     await Promise.all([
       db.roastLevels.clear(),
       db.flavorTags.clear(),

@@ -1,15 +1,17 @@
 import { describe, expect, it } from "vitest";
+import type { Bean } from "@/schemas/bean";
 import type { RoastLog, Tasting } from "@/schemas/roastLog";
 import {
   buildLineChartData,
   buildRadarChartData,
   logsWithTasting,
+  selectDefaultLog,
 } from "./analysis";
 
 const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
   id: crypto.randomUUID(),
   beanId: "bean-1",
-  roastDate: "2025-01-01",
+  roastStartTime: "2025-01-01T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -58,17 +60,17 @@ describe("buildLineChartData", () => {
   it("複数ログが roastDate 昇順で x=1,2,3 に並ぶ", () => {
     const logs = [
       makeLog({
-        roastDate: "2025-03-01",
+        roastStartTime: "2025-03-01T00:00",
         weightBeforeG: 200,
         weightAfterG: 160,
       }),
       makeLog({
-        roastDate: "2025-01-01",
+        roastStartTime: "2025-01-01T00:00",
         weightBeforeG: 250,
         weightAfterG: 210,
       }),
       makeLog({
-        roastDate: "2025-02-01",
+        roastStartTime: "2025-02-01T00:00",
         weightBeforeG: 300,
         weightAfterG: 240,
       }),
@@ -82,6 +84,22 @@ describe("buildLineChartData", () => {
     expect((wlr.data[0].y as number).toFixed(1)).toBe("16.0");
     expect((wlr.data[1].y as number).toFixed(1)).toBe("20.0");
     expect((wlr.data[2].y as number).toFixed(1)).toBe("20.0");
+  });
+
+  it("重量が null のログはチャートデータから除外される", () => {
+    const withWeight = makeLog({
+      roastStartTime: "2025-01-01T00:00",
+      weightBeforeG: 250,
+      weightAfterG: 210,
+    });
+    const noWeight = makeLog({
+      roastStartTime: "2025-02-01T00:00",
+      weightBeforeG: null,
+      weightAfterG: null,
+    });
+    const result = buildLineChartData([withWeight, noWeight]);
+    expect(result[0].data).toHaveLength(1);
+    expect(result[0].data[0].x).toBe(1);
   });
 });
 
@@ -97,6 +115,85 @@ describe("logsWithTasting", () => {
   it("全件 Tasting あり → 全件返す", () => {
     const logs = [makeLog({ tasting: TASTING }), makeLog({ tasting: TASTING })];
     expect(logsWithTasting(logs)).toHaveLength(2);
+  });
+});
+
+const makeBean = (overrides: Partial<Bean> = {}): Bean => ({
+  id: "bean-1",
+  name: "エチオピア",
+  origin: "エチオピア",
+  productName: "",
+  shopName: "",
+  purchasedAt: null,
+  importedAt: null,
+  stockG: 500,
+  bestLogId: null,
+  note: "",
+  totalG: 0,
+  flavorTagIds: [],
+  process: "",
+  region: "",
+  altitude: "",
+  variety: "",
+  ...overrides,
+});
+
+describe("selectDefaultLog", () => {
+  it("bean が null なら null を返す", () => {
+    expect(selectDefaultLog(null, [])).toBeNull();
+  });
+
+  it("ログが0件なら null を返す", () => {
+    expect(selectDefaultLog(makeBean(), [])).toBeNull();
+  });
+
+  it("Tasting がないログしかなければ null を返す", () => {
+    const log = makeLog({ tasting: null });
+    expect(selectDefaultLog(makeBean(), [log])).toBeNull();
+  });
+
+  it("bestLogId なしなら Tasting ありの最新ログを返す", () => {
+    const old = makeLog({
+      id: "old",
+      roastStartTime: "2025-01-01T00:00",
+      tasting: TASTING,
+    });
+    const newer = makeLog({
+      id: "new",
+      roastStartTime: "2025-06-01T00:00",
+      tasting: TASTING,
+    });
+    expect(selectDefaultLog(makeBean(), [old, newer])).toBe("new");
+  });
+
+  it("bestLogId が Tasting ありなら BestRecipe を返す", () => {
+    const best = makeLog({
+      id: "best",
+      roastStartTime: "2025-01-01T00:00",
+      tasting: TASTING,
+    });
+    const newer = makeLog({
+      id: "new",
+      roastStartTime: "2025-06-01T00:00",
+      tasting: TASTING,
+    });
+    const bean = makeBean({ bestLogId: "best" });
+    expect(selectDefaultLog(bean, [best, newer])).toBe("best");
+  });
+
+  it("bestLogId が Tasting なしなら最新の Tasting ありログを返す", () => {
+    const best = makeLog({
+      id: "best",
+      roastStartTime: "2025-01-01T00:00",
+      tasting: null,
+    });
+    const newer = makeLog({
+      id: "new",
+      roastStartTime: "2025-06-01T00:00",
+      tasting: TASTING,
+    });
+    const bean = makeBean({ bestLogId: "best" });
+    expect(selectDefaultLog(bean, [best, newer])).toBe("new");
   });
 });
 

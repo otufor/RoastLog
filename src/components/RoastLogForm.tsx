@@ -1,4 +1,5 @@
 import { useForm, useStore } from "@tanstack/react-form";
+import { useEffect } from "react";
 import { z } from "zod";
 import { StarRating } from "@/components/StarRating";
 import { TimePicker } from "@/components/TimePicker";
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { calcWeightLossRate } from "@/domain/roastLog";
+import { buildTasting, validateTastingAxes } from "@/domain/tasting";
 import { weatherEmoji } from "@/lib/weatherEmoji";
 import type { Bean } from "@/schemas/bean";
 import type { FlavorTag, RoastDevice, RoastLevel } from "@/schemas/masterData";
@@ -25,7 +27,7 @@ const TastingAxisScore = z.number().int().min(1).max(5).nullable();
 const FormSchema = z
   .object({
     beanId: z.string().min(1, "豆を選択してください"),
-    roastDate: z.string().min(1, "焙煎日を入力してください"),
+    roastStartTime: z.string().min(1, "焙煎日時を入力してください"),
     roastLevelId: z.string().min(1, "焙煎度を選択してください"),
     roastDeviceId: z.string().nullable(),
     roastDurationSec: z.number().int().nonnegative(),
@@ -33,10 +35,12 @@ const FormSchema = z
     secondCrackSec: z.number().int().nonnegative().nullable(),
     weightBeforeG: z
       .number()
-      .positive("焙煎前重量は0より大きい値を入力してください"),
+      .positive("焙煎前重量は0より大きい値を入力してください")
+      .nullable(),
     weightAfterG: z
       .number()
-      .positive("焙煎後重量は0より大きい値を入力してください"),
+      .positive("焙煎後重量は0より大きい値を入力してください")
+      .nullable(),
     indoorTempC: z.number().nullable(),
     outdoorTempC: z.number().nullable(),
     outdoorHumidity: z.number().min(0).max(100).nullable(),
@@ -61,8 +65,7 @@ const FormSchema = z
       data.aftertaste,
       data.cleanliness,
     ];
-    const filled = axes.filter((v) => v !== null).length;
-    if (filled > 0 && filled < 6) {
+    if (!validateTastingAxes(axes)) {
       ctx.addIssue({
         code: "custom",
         message:
@@ -70,6 +73,8 @@ const FormSchema = z
       });
     }
   });
+
+export type RoastLogFormValues = z.infer<typeof FormSchema>;
 
 interface RoastLogFormProps {
   defaultValues: CreateRoastLogInput;
@@ -79,6 +84,7 @@ interface RoastLogFormProps {
   flavorTags: FlavorTag[];
   submitLabel: string;
   onSubmit: (input: CreateRoastLogInput) => void | Promise<void>;
+  onValuesChange?: (values: RoastLogFormValues) => void;
 }
 
 export function RoastLogForm({
@@ -89,11 +95,12 @@ export function RoastLogForm({
   flavorTags,
   submitLabel,
   onSubmit,
+  onValuesChange,
 }: RoastLogFormProps) {
   const form = useForm({
     defaultValues: {
       beanId: defaultValues.beanId,
-      roastDate: defaultValues.roastDate,
+      roastStartTime: defaultValues.roastStartTime,
       roastLevelId: defaultValues.roastLevelId,
       roastDeviceId: defaultValues.roastDeviceId,
       roastDurationSec: defaultValues.roastDurationSec,
@@ -129,18 +136,15 @@ export function RoastLogForm({
         overallScore,
         ...formRest
       } = value;
-      const tasting =
-        sweetness && acidity && body && bitterness && aftertaste && cleanliness
-          ? {
-              flavorTags: flavorTagIds,
-              sweetness,
-              acidity,
-              body,
-              bitterness,
-              aftertaste,
-              cleanliness,
-            }
-          : null;
+      const tasting = buildTasting(
+        flavorTagIds,
+        sweetness,
+        acidity,
+        body,
+        bitterness,
+        aftertaste,
+        cleanliness,
+      );
       await onSubmit({
         ...defaultValues,
         ...formRest,
@@ -154,6 +158,10 @@ export function RoastLogForm({
     calcWeightLossRate(state.values.weightBeforeG, state.values.weightAfterG),
   );
   const formErrors = useStore(form.store, (state) => state.errors);
+  const draftValues = useStore(form.store, (state) => state.values);
+  useEffect(() => {
+    onValuesChange?.(draftValues);
+  }, [draftValues, onValuesChange]);
 
   return (
     <form
@@ -201,14 +209,14 @@ export function RoastLogForm({
         )}
       </form.Field>
 
-      {/* 焙煎日 */}
-      <form.Field name="roastDate">
+      {/* 焙煎日時 */}
+      <form.Field name="roastStartTime">
         {(field) => (
           <div className="flex flex-col gap-1">
-            <Label htmlFor="log-roast-date">焙煎日</Label>
+            <Label htmlFor="log-roast-start-time">焙煎日時</Label>
             <Input
-              id="log-roast-date"
-              type="date"
+              id="log-roast-start-time"
+              type="datetime-local"
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
             />
@@ -343,8 +351,12 @@ export function RoastLogForm({
                   type="number"
                   min={0}
                   step={0.1}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  value={field.state.value ?? ""}
+                  onChange={(e) =>
+                    field.handleChange(
+                      e.target.value === "" ? null : Number(e.target.value),
+                    )
+                  }
                 />
                 {field.state.meta.errors.map((err) =>
                   err ? (
@@ -370,8 +382,12 @@ export function RoastLogForm({
                   type="number"
                   min={0}
                   step={0.1}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  value={field.state.value ?? ""}
+                  onChange={(e) =>
+                    field.handleChange(
+                      e.target.value === "" ? null : Number(e.target.value),
+                    )
+                  }
                 />
                 {field.state.meta.errors.map((err) =>
                   err ? (
@@ -392,7 +408,7 @@ export function RoastLogForm({
         <div className="flex items-center justify-between rounded-md bg-muted px-3 py-2">
           <span className="text-sm text-muted-foreground">重量減少率</span>
           <span className="font-mono text-sm font-medium">
-            {weightLossRate.toFixed(1)}%
+            {weightLossRate !== null ? `${weightLossRate.toFixed(1)}%` : "—"}
           </span>
         </div>
       </div>

@@ -62,6 +62,10 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
     await navigate({ to: "/logs/$logId/edit", params: { logId } });
   };
 
+  const handleDuplicate = async () => {
+    await navigate({ to: "/logs/new", search: { fromLogId: logId } });
+  };
+
   return (
     <div className="p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -75,6 +79,13 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
             className="px-4 py-2 rounded-lg border border-border text-sm font-medium"
           >
             BestRecipe に指定
+          </button>
+          <button
+            type="button"
+            onClick={handleDuplicate}
+            className="px-4 py-2 rounded-lg border border-border text-sm font-medium"
+          >
+            同じ設定で焙煎
           </button>
           <button
             type="button"
@@ -94,8 +105,8 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
       </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        <dt className="text-muted-foreground">焙煎日</dt>
-        <dd>{log.roastDate}</dd>
+        <dt className="text-muted-foreground">焙煎日時</dt>
+        <dd>{log.roastStartTime.replace("T", " ")}</dd>
 
         <dt className="text-muted-foreground">焙煎度</dt>
         <dd>{level?.label ?? "—"}</dd>
@@ -113,13 +124,13 @@ export function RoastLogDetailPage({ logId }: RoastLogDetailPageProps) {
         <dd>{formatSec(log.secondCrackSec)}</dd>
 
         <dt className="text-muted-foreground">焙煎前重量</dt>
-        <dd>{log.weightBeforeG}g</dd>
+        <dd>{log.weightBeforeG != null ? `${log.weightBeforeG}g` : "—"}</dd>
 
         <dt className="text-muted-foreground">焙煎後重量</dt>
-        <dd>{log.weightAfterG}g</dd>
+        <dd>{log.weightAfterG != null ? `${log.weightAfterG}g` : "—"}</dd>
 
         <dt className="text-muted-foreground">重量減少率</dt>
-        <dd>{rate.toFixed(1)}%</dd>
+        <dd>{rate != null ? `${rate.toFixed(1)}%` : "—"}</dd>
 
         <dt className="text-muted-foreground">室内温度</dt>
         <dd>{log.indoorTempC != null ? `${log.indoorTempC}℃` : "—"}</dd>

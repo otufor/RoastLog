@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/db";
+import { QUERY_KEYS } from "@/hooks/queryKeys";
 import { BeanRepository } from "@/repositories/beanRepository";
 import type { Bean, CreateBeanInput } from "@/schemas/bean";
 
@@ -23,7 +24,7 @@ export function useCreateBean() {
       await repo.save(bean);
       return bean;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["beans"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.beans.all() }),
   });
 }
 
@@ -31,7 +32,7 @@ export function useUpdateBean() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (bean: Bean) => repo.save(bean),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["beans"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.beans.all() }),
   });
 }
 
@@ -39,7 +40,7 @@ export function useDeleteBean() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => repo.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["beans"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.beans.all() }),
   });
 }
 
@@ -57,6 +58,6 @@ export function useSetBestLog() {
       if (!bean) throw new Error(`Bean not found: ${beanId}`);
       await repo.save({ ...bean, bestLogId: logId });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["beans"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.beans.all() }),
   });
 }

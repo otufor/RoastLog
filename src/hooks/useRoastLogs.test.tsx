@@ -22,7 +22,7 @@ function makeQc() {
 
 const BASE_INPUT = {
   beanId: "550e8400-e29b-41d4-a716-446655440001",
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -273,7 +273,7 @@ const BEAN_ID = "550e8400-e29b-41d4-a716-446655440001";
 const LOG_A: Parameters<typeof db.roastLogs.put>[0] = {
   id: "550e8400-e29b-41d4-a716-446655440010",
   beanId: BEAN_ID,
-  roastDate: "2025-04-20",
+  roastStartTime: "2025-04-20T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -294,13 +294,13 @@ const LOG_A: Parameters<typeof db.roastLogs.put>[0] = {
 const LOG_B: Parameters<typeof db.roastLogs.put>[0] = {
   ...LOG_A,
   id: "550e8400-e29b-41d4-a716-446655440011",
-  roastDate: "2025-04-10",
+  roastStartTime: "2025-04-10T00:00",
 };
 
 const LOG_C: Parameters<typeof db.roastLogs.put>[0] = {
   ...LOG_A,
   id: "550e8400-e29b-41d4-a716-446655440012",
-  roastDate: "2025-03-01",
+  roastStartTime: "2025-03-01T00:00",
 };
 
 describe("usePreviousRoastLog", () => {
@@ -314,7 +314,7 @@ describe("usePreviousRoastLog", () => {
     ]);
   });
 
-  it("直前のログ（roastDate 降順で1件前）を返す", async () => {
+  it("直前のログ（roastStartTime 降順で1件前）を返す", async () => {
     await db.roastLogs.bulkPut([LOG_A, LOG_B, LOG_C]);
 
     const qc = makeQc();

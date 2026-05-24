@@ -47,7 +47,7 @@ const BEAN: Bean = {
 const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
   id: crypto.randomUUID(),
   beanId: BEAN.id,
-  roastDate: "2025-01-01",
+  roastStartTime: "2025-01-01T00:00",
   roastLevelId: "medium",
   roastDeviceId: null,
   roastDurationSec: 480,
@@ -154,12 +154,12 @@ describe("AnalysisPage", () => {
     const logA = makeLog({
       beanId: BEAN.id,
       tasting: TASTING,
-      roastDate: "2025-06-01",
+      roastStartTime: "2025-06-01T00:00",
     });
     const logB = makeLog({
       beanId: BEAN_B.id,
       tasting: { ...TASTING, sweetness: 1 },
-      roastDate: "2025-05-01",
+      roastStartTime: "2025-05-01T00:00",
     });
     await db.beans.put({ ...BEAN, bestLogId: logA.id });
     await db.beans.put({ ...BEAN_B, bestLogId: logB.id });
@@ -193,10 +193,13 @@ describe("AnalysisPage", () => {
   });
 
   it("T4: 2枚目カードを選択するとスロット2に入り、選択済みカードをクリックすると解除される", async () => {
-    const logA = makeLog({ tasting: TASTING, roastDate: "2025-06-01" });
+    const logA = makeLog({
+      tasting: TASTING,
+      roastStartTime: "2025-06-01T00:00",
+    });
     const logB = makeLog({
       tasting: { ...TASTING, sweetness: 2 },
-      roastDate: "2025-05-01",
+      roastStartTime: "2025-05-01T00:00",
     });
     await db.beans.put({ ...BEAN, bestLogId: logA.id });
     await db.roastLogs.put(logA);
@@ -225,7 +228,10 @@ describe("AnalysisPage", () => {
   });
 
   it("T3: BestRecipe ありの Bean を選択すると自動でレーダーチャートが表示される", async () => {
-    const log = makeLog({ tasting: TASTING, roastDate: "2025-06-01" });
+    const log = makeLog({
+      tasting: TASTING,
+      roastStartTime: "2025-06-01T00:00",
+    });
     await db.beans.put({ ...BEAN, bestLogId: log.id });
     await db.roastLogs.put(log);
     const user = userEvent.setup();
@@ -242,7 +248,9 @@ describe("AnalysisPage", () => {
 
   it("T2: Tasting なしカードをクリックしても選択状態にならない", async () => {
     await db.beans.put(BEAN);
-    await db.roastLogs.put(makeLog({ roastDate: "2025-06-01", tasting: null }));
+    await db.roastLogs.put(
+      makeLog({ roastStartTime: "2025-06-01T00:00", tasting: null }),
+    );
     const user = userEvent.setup();
     renderPage();
     await waitFor(() =>
@@ -260,7 +268,7 @@ describe("AnalysisPage", () => {
 
   it("T1: 豆選択後、その Bean のログがカードとして表示される", async () => {
     await db.beans.put(BEAN);
-    await db.roastLogs.put(makeLog({ roastDate: "2025-06-01" }));
+    await db.roastLogs.put(makeLog({ roastStartTime: "2025-06-01T00:00" }));
     const user = userEvent.setup();
     renderPage();
     await waitFor(() =>
@@ -277,8 +285,8 @@ describe("AnalysisPage", () => {
 
   it("T-LINE-3: X 軸の tick に小数文字列が存在しない", async () => {
     await db.beans.put(BEAN);
-    await db.roastLogs.put(makeLog({ roastDate: "2025-06-01" }));
-    await db.roastLogs.put(makeLog({ roastDate: "2025-07-01" }));
+    await db.roastLogs.put(makeLog({ roastStartTime: "2025-06-01T00:00" }));
+    await db.roastLogs.put(makeLog({ roastStartTime: "2025-07-01T00:00" }));
     const user = userEvent.setup();
     renderPage();
     await waitFor(() =>
@@ -311,7 +319,10 @@ describe("AnalysisPage", () => {
   );
 
   it("T-RADAR-3: レーダーチャートに6つの日本語ラベルが存在する", async () => {
-    const log = makeLog({ tasting: TASTING, roastDate: "2025-06-01" });
+    const log = makeLog({
+      tasting: TASTING,
+      roastStartTime: "2025-06-01T00:00",
+    });
     await db.beans.put({ ...BEAN, bestLogId: log.id });
     await db.roastLogs.put(log);
     const user = userEvent.setup();
@@ -331,7 +342,10 @@ describe("AnalysisPage", () => {
   });
 
   it("T-RADAR-4: ラベルを包む <g> の transform 属性値の Set サイズが 6 である", async () => {
-    const log = makeLog({ tasting: TASTING, roastDate: "2025-06-01" });
+    const log = makeLog({
+      tasting: TASTING,
+      roastStartTime: "2025-06-01T00:00",
+    });
     await db.beans.put({ ...BEAN, bestLogId: log.id });
     await db.roastLogs.put(log);
     const user = userEvent.setup();

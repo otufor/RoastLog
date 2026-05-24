@@ -226,7 +226,7 @@ describe("BeanDetailPage", () => {
     const log = {
       id: logId,
       beanId,
-      roastDate: "2025-06-01",
+      roastStartTime: "2025-06-01T00:00",
       roastLevelId: levelId,
       roastDeviceId: "dev-1",
       roastDurationSec: 480,
@@ -308,7 +308,7 @@ describe("BeanDetailPage", () => {
     await db.roastLogs.put({
       id: logId,
       beanId,
-      roastDate: "2025-07-10",
+      roastStartTime: "2025-07-10T00:00",
       roastLevelId: levelId,
       roastDeviceId: "dev-2",
       roastDurationSec: 600,

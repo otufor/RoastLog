@@ -23,6 +23,25 @@ class RoastLogDB extends Dexie {
       flavorTags: "id, name",
       roastDevices: "id, name",
     });
+    this.version(3)
+      .stores({
+        beans: "id, name, stockG",
+        roastLogs: "id, beanId, roastStartTime",
+        roastLevels: "id, order",
+        flavorTags: "id, name",
+        roastDevices: "id, name",
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table("roastLogs")
+          .toCollection()
+          .modify((log: Record<string, unknown>) => {
+            if (log.roastDate && !log.roastStartTime) {
+              log.roastStartTime = `${log.roastDate}T00:00`;
+              delete log.roastDate;
+            }
+          });
+      });
   }
 }
 
