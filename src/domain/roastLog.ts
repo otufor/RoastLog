@@ -10,7 +10,7 @@ export type LogFilter = {
   dateTo?: string;
 };
 
-export type LogSortKey = "roastDate" | "overallScore" | "weightLossRate";
+export type LogSortKey = "roastStartTime" | "overallScore" | "weightLossRate";
 export type LogSortDir = "asc" | "desc";
 
 export function filterAndSortLogs(
@@ -34,15 +34,17 @@ export function filterAndSortLogs(
       if (log.overallScore == null || log.overallScore > filter.scoreMax)
         return false;
     }
-    if (filter.dateFrom && log.roastDate < filter.dateFrom) return false;
-    if (filter.dateTo && log.roastDate > filter.dateTo) return false;
+    if (filter.dateFrom && log.roastStartTime.slice(0, 10) < filter.dateFrom)
+      return false;
+    if (filter.dateTo && log.roastStartTime.slice(0, 10) > filter.dateTo)
+      return false;
     return true;
   });
 
   return filtered.sort((a, b) => {
     let cmp = 0;
-    if (sortKey === "roastDate") {
-      cmp = a.roastDate.localeCompare(b.roastDate);
+    if (sortKey === "roastStartTime") {
+      cmp = a.roastStartTime.localeCompare(b.roastStartTime);
     } else if (sortKey === "overallScore") {
       cmp = (a.overallScore ?? 0) - (b.overallScore ?? 0);
     } else {

@@ -15,7 +15,7 @@ export const TastingSchema = z.object({
 export const RoastLogSchema = z.object({
   id: z.string().uuid(),
   beanId: z.string().uuid(),
-  roastDate: z.string(),
+  roastStartTime: z.string(),
   roastLevelId: z.string(),
   roastDeviceId: z.string().nullable(),
   roastDurationSec: z.number().int().nonnegative(),

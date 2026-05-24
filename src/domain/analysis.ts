@@ -20,7 +20,7 @@ const TASTING_AXES = [
 
 export function buildLineChartData(logs: RoastLog[]): LineChartSeries[] {
   const sorted = [...logs]
-    .sort((a, b) => a.roastDate.localeCompare(b.roastDate))
+    .sort((a, b) => a.roastStartTime.localeCompare(b.roastStartTime))
     .filter((log) => log.weightBeforeG !== null && log.weightAfterG !== null);
   return [
     {
@@ -39,7 +39,7 @@ export function selectDefaultLog(
 ): string | null {
   if (!bean) return null;
   const sorted = [...beanLogs].sort((a, b) =>
-    b.roastDate.localeCompare(a.roastDate),
+    b.roastStartTime.localeCompare(a.roastStartTime),
   );
   const best = bean.bestLogId
     ? (beanLogs.find((l) => l.id === bean.bestLogId && l.tasting !== null) ??
