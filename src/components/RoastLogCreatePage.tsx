@@ -1,7 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import type { RoastLogFormValues } from "@/components/RoastLogForm";
 import { RoastLogForm } from "@/components/RoastLogForm";
 import { isStockInsufficient } from "@/domain/roastLog";
+import { buildTasting } from "@/domain/tasting";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useBeans } from "@/hooks/useBeans";
 import { useFlavorTags } from "@/hooks/useFlavorTags";
@@ -11,6 +13,49 @@ import { useRoastLevels } from "@/hooks/useRoastLevels";
 import { useRoastLog } from "@/hooks/useRoastLogs";
 import { useWeather } from "@/hooks/useWeather";
 import type { CreateRoastLogInput } from "@/schemas/roastLog";
+
+const DRAFT_KEY = "roastlog-new-draft";
+
+function readDraft(): RoastLogFormValues | null {
+  try {
+    return JSON.parse(
+      sessionStorage.getItem(DRAFT_KEY) ?? "null",
+    ) as RoastLogFormValues | null;
+  } catch {
+    return null;
+  }
+}
+
+function applyDraft(
+  base: CreateRoastLogInput,
+  draft: RoastLogFormValues,
+): CreateRoastLogInput {
+  const tasting = buildTasting(
+    draft.flavorTagIds,
+    draft.sweetness,
+    draft.acidity,
+    draft.body,
+    draft.bitterness,
+    draft.aftertaste,
+    draft.cleanliness,
+  );
+  return {
+    ...base,
+    beanId: draft.beanId,
+    roastDate: draft.roastDate,
+    roastLevelId: draft.roastLevelId,
+    roastDeviceId: draft.roastDeviceId,
+    roastDurationSec: draft.roastDurationSec,
+    firstCrackSec: draft.firstCrackSec,
+    secondCrackSec: draft.secondCrackSec,
+    weightBeforeG: draft.weightBeforeG,
+    weightAfterG: draft.weightAfterG,
+    indoorTempC: draft.indoorTempC,
+    processNote: draft.processNote,
+    tasting,
+    overallScore: draft.overallScore,
+  };
+}
 
 const EMPTY_DEFAULTS: CreateRoastLogInput = {
   beanId: "",
@@ -92,6 +137,15 @@ export function RoastLogCreatePage({ fromLogId }: RoastLogCreatePageProps) {
       : {}),
   };
 
+  const draft = fromLogId ? null : readDraft();
+  const resolvedDefaults = draft
+    ? applyDraft(defaultValues, draft)
+    : defaultValues;
+
+  function handleValuesChange(values: RoastLogFormValues) {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(values));
+  }
+
   async function handleSubmit(input: CreateRoastLogInput) {
     const bean = beans.find((b) => b.id === input.beanId);
     if (bean && isStockInsufficient(bean.stockG, input.weightBeforeG)) {
@@ -102,6 +156,7 @@ export function RoastLogCreatePage({ fromLogId }: RoastLogCreatePageProps) {
   }
 
   async function save(input: CreateRoastLogInput) {
+    sessionStorage.removeItem(DRAFT_KEY);
     const log = await mutateAsync(input);
     await navigate({ to: "/logs/$logId", params: { logId: log.id } });
   }
@@ -110,13 +165,14 @@ export function RoastLogCreatePage({ fromLogId }: RoastLogCreatePageProps) {
     <div className="p-6">
       <h1 className="mb-4 text-2xl font-bold">新しい焙煎を記録</h1>
       <RoastLogForm
-        defaultValues={defaultValues}
+        defaultValues={resolvedDefaults}
         beans={beans}
         roastLevels={levels}
         roastDevices={devices}
         flavorTags={flavorTags}
         submitLabel="登録"
         onSubmit={handleSubmit}
+        onValuesChange={fromLogId ? undefined : handleValuesChange}
       />
       {pendingInput && (
         <div

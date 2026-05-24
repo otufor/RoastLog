@@ -1,4 +1,5 @@
 import { useForm, useStore } from "@tanstack/react-form";
+import { useEffect } from "react";
 import { z } from "zod";
 import { StarRating } from "@/components/StarRating";
 import { TimePicker } from "@/components/TimePicker";
@@ -71,6 +72,8 @@ const FormSchema = z
     }
   });
 
+export type RoastLogFormValues = z.infer<typeof FormSchema>;
+
 interface RoastLogFormProps {
   defaultValues: CreateRoastLogInput;
   beans: Bean[];
@@ -79,6 +82,7 @@ interface RoastLogFormProps {
   flavorTags: FlavorTag[];
   submitLabel: string;
   onSubmit: (input: CreateRoastLogInput) => void | Promise<void>;
+  onValuesChange?: (values: RoastLogFormValues) => void;
 }
 
 export function RoastLogForm({
@@ -89,6 +93,7 @@ export function RoastLogForm({
   flavorTags,
   submitLabel,
   onSubmit,
+  onValuesChange,
 }: RoastLogFormProps) {
   const form = useForm({
     defaultValues: {
@@ -151,6 +156,10 @@ export function RoastLogForm({
     calcWeightLossRate(state.values.weightBeforeG, state.values.weightAfterG),
   );
   const formErrors = useStore(form.store, (state) => state.errors);
+  const draftValues = useStore(form.store, (state) => state.values);
+  useEffect(() => {
+    onValuesChange?.(draftValues);
+  }, [draftValues, onValuesChange]);
 
   return (
     <form
