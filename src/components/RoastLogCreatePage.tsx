@@ -8,6 +8,7 @@ import { useFlavorTags } from "@/hooks/useFlavorTags";
 import { useCreateRoastLog } from "@/hooks/useMutateRoastLog";
 import { useRoastDevices } from "@/hooks/useRoastDevices";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
+import { useRoastLog } from "@/hooks/useRoastLogs";
 import { useWeather } from "@/hooks/useWeather";
 import type { CreateRoastLogInput } from "@/schemas/roastLog";
 
@@ -31,7 +32,11 @@ const EMPTY_DEFAULTS: CreateRoastLogInput = {
   processNote: "",
 };
 
-export function RoastLogCreatePage() {
+interface RoastLogCreatePageProps {
+  fromLogId?: string;
+}
+
+export function RoastLogCreatePage({ fromLogId }: RoastLogCreatePageProps) {
   const navigate = useNavigate();
   const { mutateAsync } = useCreateRoastLog();
   const [pendingInput, setPendingInput] = useState<CreateRoastLogInput | null>(
@@ -47,6 +52,9 @@ export function RoastLogCreatePage() {
     appSettings?.locationLat ?? null,
     appSettings?.locationLon ?? null,
   );
+  const { data: sourceLog, isLoading: sourceLogLoading } = useRoastLog(
+    fromLogId ?? "",
+  );
 
   if (
     beansLoading ||
@@ -54,7 +62,8 @@ export function RoastLogCreatePage() {
     devicesLoading ||
     flavorTagsLoading ||
     settingsLoading ||
-    weather.isLoading
+    weather.isLoading ||
+    (fromLogId != null && sourceLogLoading)
   )
     return null;
 
@@ -70,6 +79,17 @@ export function RoastLogCreatePage() {
     outdoorHumidity: weather.data?.outdoorHumidity ?? null,
     weatherCode: weather.data?.weatherCode ?? null,
     tempSource: weather.data ? "auto" : "manual",
+    ...(sourceLog
+      ? {
+          beanId: sourceLog.beanId,
+          roastLevelId: sourceLog.roastLevelId,
+          roastDeviceId: sourceLog.roastDeviceId,
+          roastDurationSec: sourceLog.roastDurationSec,
+          firstCrackSec: sourceLog.firstCrackSec,
+          secondCrackSec: sourceLog.secondCrackSec,
+          indoorTempC: sourceLog.indoorTempC,
+        }
+      : {}),
   };
 
   async function handleSubmit(input: CreateRoastLogInput) {
