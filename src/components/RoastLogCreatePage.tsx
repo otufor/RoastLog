@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { RoastLogForm } from "@/components/RoastLogForm";
+import { isStockInsufficient } from "@/domain/roastLog";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useBeans } from "@/hooks/useBeans";
 import { useFlavorTags } from "@/hooks/useFlavorTags";
@@ -73,7 +74,7 @@ export function RoastLogCreatePage() {
 
   async function handleSubmit(input: CreateRoastLogInput) {
     const bean = beans.find((b) => b.id === input.beanId);
-    if (bean && bean.stockG < input.weightBeforeG) {
+    if (bean && isStockInsufficient(bean.stockG, input.weightBeforeG)) {
       setPendingInput(input);
       return;
     }

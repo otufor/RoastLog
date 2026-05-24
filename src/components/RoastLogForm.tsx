@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { calcWeightLossRate } from "@/domain/roastLog";
+import { buildTasting, validateTastingAxes } from "@/domain/tasting";
 import { weatherEmoji } from "@/lib/weatherEmoji";
 import type { Bean } from "@/schemas/bean";
 import type { FlavorTag, RoastDevice, RoastLevel } from "@/schemas/masterData";
@@ -61,8 +62,7 @@ const FormSchema = z
       data.aftertaste,
       data.cleanliness,
     ];
-    const filled = axes.filter((v) => v !== null).length;
-    if (filled > 0 && filled < 6) {
+    if (!validateTastingAxes(axes)) {
       ctx.addIssue({
         code: "custom",
         message:
@@ -129,18 +129,15 @@ export function RoastLogForm({
         overallScore,
         ...formRest
       } = value;
-      const tasting =
-        sweetness && acidity && body && bitterness && aftertaste && cleanliness
-          ? {
-              flavorTags: flavorTagIds,
-              sweetness,
-              acidity,
-              body,
-              bitterness,
-              aftertaste,
-              cleanliness,
-            }
-          : null;
+      const tasting = buildTasting(
+        flavorTagIds,
+        sweetness,
+        acidity,
+        body,
+        bitterness,
+        aftertaste,
+        cleanliness,
+      );
       await onSubmit({
         ...defaultValues,
         ...formRest,

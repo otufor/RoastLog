@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import type { Bean } from "@/schemas/bean";
 import type { RoastLog, Tasting } from "@/schemas/roastLog";
 import {
   buildLineChartData,
   buildRadarChartData,
   logsWithTasting,
+  selectDefaultLog,
 } from "./analysis";
 
 const makeLog = (overrides: Partial<RoastLog> = {}): RoastLog => ({
@@ -97,6 +99,85 @@ describe("logsWithTasting", () => {
   it("全件 Tasting あり → 全件返す", () => {
     const logs = [makeLog({ tasting: TASTING }), makeLog({ tasting: TASTING })];
     expect(logsWithTasting(logs)).toHaveLength(2);
+  });
+});
+
+const makeBean = (overrides: Partial<Bean> = {}): Bean => ({
+  id: "bean-1",
+  name: "エチオピア",
+  origin: "エチオピア",
+  productName: "",
+  shopName: "",
+  purchasedAt: null,
+  importedAt: null,
+  stockG: 500,
+  bestLogId: null,
+  note: "",
+  totalG: 0,
+  flavorTagIds: [],
+  process: "",
+  region: "",
+  altitude: "",
+  variety: "",
+  ...overrides,
+});
+
+describe("selectDefaultLog", () => {
+  it("bean が null なら null を返す", () => {
+    expect(selectDefaultLog(null, [])).toBeNull();
+  });
+
+  it("ログが0件なら null を返す", () => {
+    expect(selectDefaultLog(makeBean(), [])).toBeNull();
+  });
+
+  it("Tasting がないログしかなければ null を返す", () => {
+    const log = makeLog({ tasting: null });
+    expect(selectDefaultLog(makeBean(), [log])).toBeNull();
+  });
+
+  it("bestLogId なしなら Tasting ありの最新ログを返す", () => {
+    const old = makeLog({
+      id: "old",
+      roastDate: "2025-01-01",
+      tasting: TASTING,
+    });
+    const newer = makeLog({
+      id: "new",
+      roastDate: "2025-06-01",
+      tasting: TASTING,
+    });
+    expect(selectDefaultLog(makeBean(), [old, newer])).toBe("new");
+  });
+
+  it("bestLogId が Tasting ありなら BestRecipe を返す", () => {
+    const best = makeLog({
+      id: "best",
+      roastDate: "2025-01-01",
+      tasting: TASTING,
+    });
+    const newer = makeLog({
+      id: "new",
+      roastDate: "2025-06-01",
+      tasting: TASTING,
+    });
+    const bean = makeBean({ bestLogId: "best" });
+    expect(selectDefaultLog(bean, [best, newer])).toBe("best");
+  });
+
+  it("bestLogId が Tasting なしなら最新の Tasting ありログを返す", () => {
+    const best = makeLog({
+      id: "best",
+      roastDate: "2025-01-01",
+      tasting: null,
+    });
+    const newer = makeLog({
+      id: "new",
+      roastDate: "2025-06-01",
+      tasting: TASTING,
+    });
+    const bean = makeBean({ bestLogId: "best" });
+    expect(selectDefaultLog(bean, [best, newer])).toBe("new");
   });
 });
 

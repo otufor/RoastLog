@@ -1,26 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/db";
+import { QUERY_KEYS } from "@/hooks/queryKeys";
 import { RoastLogRepository } from "@/repositories/roastLogRepository";
 
 const repo = new RoastLogRepository(db.roastLogs);
 
 export function useRoastLogs() {
   return useQuery({
-    queryKey: ["roastLogs"],
+    queryKey: QUERY_KEYS.roastLogs.all(),
     queryFn: () => repo.findAll(),
   });
 }
 
 export function useRoastLog(id: string) {
   return useQuery({
-    queryKey: ["roastLogs", id],
+    queryKey: QUERY_KEYS.roastLogs.detail(id),
     queryFn: async () => (await repo.findById(id)) ?? null,
   });
 }
 
 export function usePreviousRoastLog(logId: string, beanId: string | null) {
   return useQuery({
-    queryKey: ["roastLogs", "byBean", beanId],
+    queryKey: QUERY_KEYS.roastLogs.byBean(beanId ?? ""),
     queryFn: () => repo.findByBeanId(beanId ?? ""),
     enabled: beanId !== null,
     select: (logs) => {

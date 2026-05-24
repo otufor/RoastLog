@@ -5,6 +5,7 @@ import { StarRating } from "@/components/StarRating";
 import {
   calcWeightLossRate,
   filterAndSortLogs,
+  isCleanlinessWarning,
   type LogFilter,
   type LogSortDir,
   type LogSortKey,
@@ -386,7 +387,8 @@ export function RoastLogListPage() {
             const level = levelMap[log.roastLevelId];
             const isBest = bestLogIds.has(log.id);
             const cleanliness = log.tasting?.cleanliness ?? null;
-            const isDanger = cleanliness != null && cleanliness <= 2;
+            const isDanger =
+              cleanliness !== null && isCleanlinessWarning(cleanliness);
             const rate = calcWeightLossRate(
               log.weightBeforeG,
               log.weightAfterG,

@@ -3,6 +3,7 @@ import {
   calcWeightLossRate,
   filterAndSortLogs,
   isCleanlinessWarning,
+  isStockInsufficient,
 } from "@/domain/roastLog";
 import type { RoastLog } from "@/schemas/roastLog";
 
@@ -221,5 +222,23 @@ describe("isCleanlinessWarning", () => {
 
   it("cleanliness が 3 のとき false", () => {
     expect(isCleanlinessWarning(3)).toBe(false);
+  });
+});
+
+describe("isStockInsufficient", () => {
+  it("使用量が在庫を超えるとき true", () => {
+    expect(isStockInsufficient(100, 150)).toBe(true);
+  });
+
+  it("使用量が在庫と同じとき false", () => {
+    expect(isStockInsufficient(100, 100)).toBe(false);
+  });
+
+  it("使用量が在庫未満のとき false", () => {
+    expect(isStockInsufficient(100, 80)).toBe(false);
+  });
+
+  it("在庫が 0 で使用量が正のとき true", () => {
+    expect(isStockInsufficient(0, 50)).toBe(true);
   });
 });

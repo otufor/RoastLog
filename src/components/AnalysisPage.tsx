@@ -9,12 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { buildLineChartData, buildRadarChartData } from "@/domain/analysis";
+import {
+  buildLineChartData,
+  buildRadarChartData,
+  selectDefaultLog,
+} from "@/domain/analysis";
 import { calcWeightLossRate } from "@/domain/roastLog";
 import { useBeans } from "@/hooks/useBeans";
 import { useRoastLevels } from "@/hooks/useRoastLevels";
 import { useRoastLogs } from "@/hooks/useRoastLogs";
-import type { Bean } from "@/schemas/bean";
 import type { RoastLog } from "@/schemas/roastLog";
 
 const RADAR_KEYS_JP: Record<string, string> = {
@@ -38,21 +41,6 @@ const emptyMessageStyle = {
   padding: "24px 0",
   textAlign: "center",
 } as const;
-
-function defaultSelector1Id(
-  bean: Bean | null,
-  beanLogs: RoastLog[],
-): string | null {
-  if (!bean) return null;
-  const sorted = [...beanLogs].sort((a, b) =>
-    b.roastDate.localeCompare(a.roastDate),
-  );
-  const best = bean.bestLogId
-    ? (beanLogs.find((l) => l.id === bean.bestLogId && l.tasting !== null) ??
-      null)
-    : null;
-  return (best ?? sorted.find((l) => l.tasting !== null) ?? null)?.id ?? null;
-}
 
 export function AnalysisPage() {
   const { data: beans = [], isLoading: beansLoading } = useBeans();
@@ -79,7 +67,7 @@ export function AnalysisPage() {
     const bean = beans.find((b) => b.id === beanId) ?? null;
     const logs = allLogs.filter((l) => l.beanId === beanId);
     setSelectedBeanId(beanId);
-    setSelector1Id(defaultSelector1Id(bean, logs));
+    setSelector1Id(selectDefaultLog(bean, logs));
     setSelector2Id(null);
   }
 

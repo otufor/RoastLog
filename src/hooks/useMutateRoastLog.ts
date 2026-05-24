@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/db";
+import { QUERY_KEYS } from "@/hooks/queryKeys";
 import { BeanRepository } from "@/repositories/beanRepository";
 import { RoastLogRepository } from "@/repositories/roastLogRepository";
 import type { CreateRoastLogInput, RoastLog } from "@/schemas/roastLog";
@@ -19,8 +20,8 @@ export function useCreateRoastLog() {
       return log;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["roastLogs"] });
-      qc.invalidateQueries({ queryKey: ["beans"] });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.roastLogs.all() });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.beans.all() });
     },
   });
 }
@@ -29,7 +30,8 @@ export function useUpdateRoastLog() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (log: RoastLog) => repo.save(log),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["roastLogs"] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.roastLogs.all() }),
   });
 }
 
@@ -37,6 +39,7 @@ export function useDeleteRoastLog() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => repo.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["roastLogs"] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.roastLogs.all() }),
   });
 }

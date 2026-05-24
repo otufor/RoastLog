@@ -65,3 +65,10 @@ export function calcWeightLossRate(
 export function isCleanlinessWarning(cleanliness: number): boolean {
   return cleanliness <= 2;
 }
+
+export function isStockInsufficient(
+  stockG: number,
+  weightBeforeG: number,
+): boolean {
+  return stockG < weightBeforeG;
+}
