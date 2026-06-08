@@ -51,7 +51,7 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
-    "@vitest/browser": "^4.1.5",
+    "@vitest/browser": "^4.1.6",
     "@vitest/browser-playwright": "^4.1.5",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.5",
